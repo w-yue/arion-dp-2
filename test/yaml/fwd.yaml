@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: "arion.com/v1"
+kind: Fwd
+metadata:
+  name: fwd0
+spec:
+  dft: "dft0"
+  droplet: "d1"
+  status: "Init"

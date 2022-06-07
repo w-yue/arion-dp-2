@@ -1,0 +1,29 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Site specific playbook variables for site named "aws"
+#
+ec2_access_key: "{{ VAULT_AWS_ACCESS_KEY_ID }}"
+ec2_secret_key: "{{ VAULT_AWS_SECRET_ACCESS_KEY }}"
+ec2_keypair: "{{ VAULT_AWS_EC2_KEYPAIR }}"
+ansible_ssh_private_key_file: "{{ VAULT_AWS_EC2_KEY_FILE }}"
+
+ansible_port: 22
+ansible_user: "ubuntu"
+k8s_type: "microk8s"
+ec2_myid: "WeiYue"
+ec2_instance_count: "3"
+ec2_region: "us-west-1"
+ec2_instance_type: "t3.xlarge"
+ec2_image: "ami-02df1d4b6e6243ab7"
+ec2_volume_size: "10"
+ec2_security_group: "arion"
+# t2.2xlarge supports max 3 interfaces, use mgmt as control as well
+ec2_subnet_id_mgmt: "subnet-0b16b023de31a5400"
+ec2_subnet_id_tenant: "subnet-042f9c3f93139a8ea"
+ec2_subnet_id_zgc: "subnet-073813024e90cf109"
+ec2_hosts: "inventories/hosts_aws"

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020-2022 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: "arion.com/v1"
+kind: Droplet
+metadata:
+  name: d0
+spec:
+  mac: 
+  - "0000:0000:0000:0001"
+  - "0000:0000:0000:0002"
+  ip: 
+  - "10.0.0.1"
+  - "10.0.0.2"
+  interface: "eth0"
+  status: "Init"

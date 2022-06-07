@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran <@phudtran>
+#          Wei Yue <@w-yue>
+#
+# Summary: Template arion-opr deployment
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: arion
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arion
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: arion
+    namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arion-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arion-operator
+  template:
+    metadata:
+      labels:
+        app: arion-operator
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      serviceAccountName: arion
+      terminationGracePeriodSeconds: 0
+      hostNetwork: true
+      containers:
+        - image: ${REGISTRY}/arion_opr:latest
+          name: arion-operator
+          securityContext:
+            privileged: true

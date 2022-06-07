@@ -1,0 +1,36 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Inventory file for site named "lab"
+#
+# Role based logical Groups of nodes
+[kube_master]
+node-0
+
+[kube_nodes]
+
+[zgc]
+node-[1:6]
+
+[aca]
+node-[7:8]
+
+# Logic group to load group_vars for lab
+[lab:children]
+launched
+
+# Physical node instances
+[launched]
+node-0 ansible_host=172.16.1.35
+node-1 ansible_host=172.16.1.190
+node-2 ansible_host=172.16.1.191
+node-3 ansible_host=172.16.1.192
+node-4 ansible_host=172.16.1.193
+node-5 ansible_host=172.16.1.194
+node-6 ansible_host=172.16.1.195
+node-7 ansible_host=172.16.1.87
+node-8 ansible_host=172.16.1.88
+#node-9 ansible_host=172.16.1.83

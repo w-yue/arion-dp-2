@@ -1,0 +1,63 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#          Wei Yue    <@w-yue>
+#
+# Summary: Play to publish Arion service images to correct registry for deployment
+#
+
+## ============== Play to Rebuild and tag arion images for deployment ================================
+- name: "==== Rebuild and tag arion images for deployment"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Rebuild & tag"
+      shell: "../install/build_arion_images.sh &>>{{DBG_LOG}}"
+      args: 
+        executable: /bin/bash
+      environment:
+        STAGE: "{{stage}}"
+        REG: "{{reg}}"
+      register: "output"
+    - debug: var=output.stdout_lines
+
+## ============== Play to Publish arion images for deployment ================================
+- name: "==== Publish Arion images to {{site}} registry {{reg}}"
+  hosts: kube_master
+  vars:
+    local_user: "{{ansible_user}}"
+  gather_facts: false
+  tasks:
+    - name: Transfer images to microk8s built-in registry
+      block:
+        - name: "Copy arion service images to site {{site}}"
+          copy:
+            src: "/tmp/arion_images.tar"
+            dest: "/tmp/arion_images.tar"
+          register: "output"
+
+        - name: "Install arion service images to site {{site}}"
+          shell: "docker load < /tmp/arion_images.tar"
+          args: 
+            executable: /bin/bash
+          register: "output"
+        - debug: var=output.stdout_lines
+
+      when: k8s_type == "microk8s"
+
+    - name: "push arion operator image to {{site}} registry {{reg}}"
+      shell: "docker push {{reg}}/arion_opr:latest"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines
+
+    - name: "push arion manager image to registry {{reg}}"
+      shell: "docker push {{reg}}/arion_manager:latest"
+      args: 
+        executable: /bin/bash
+      register: "output"
+    - debug: var=output.stdout_lines

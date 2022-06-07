@@ -1,0 +1,20 @@
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2022 The Authors.
+# Authors: Wei Yue  <@w-yue>
+#
+# Summary: arion service definition
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: arion-manager
+  labels:
+    service: arion-manager
+spec:
+  selector:
+    app: arion-manager
+  ports:
+  - port: 5000
+    targetPort: 5000

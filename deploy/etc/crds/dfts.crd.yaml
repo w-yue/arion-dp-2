@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2020 The Authors.
+
+# Authors: Phu Tran          <@phudtran>
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: dfts.arion.com
+spec:
+  scope: Namespaced
+  group: arion.com
+  names:
+    kind: Dft
+    plural: dfts
+    singular: dft
+    shortNames:
+      - dft
+      - dfts
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            table:
+              type: array
+              items:
+                type: string
+      additionalPrinterColumns:
+        - name: Status
+          type: string
+          priority: 0
+          jsonPath: .spec.status
+          description: The Current Status of the DFT
+        - name: Numchains
+          type: integer
+          priority: 0
+          jsonPath: .spec.numchains
+          description: The number of chains in the DFT
+        - name: Numchainreplicas
+          type: integer
+          priority: 0
+          jsonPath: .spec.numchainreplicas
+          description: The number of replica ftns in each chain
+        - name: CreateTime
+          type: string
+          priority: 0
+          jsonPath: .spec.createtime
+          description: Time the object is created
+        - name: ProvisionDelay
+          type: string
+          priority: 0
+          jsonPath: .spec.provisiondelay
+          description: Time to provision an object from creation

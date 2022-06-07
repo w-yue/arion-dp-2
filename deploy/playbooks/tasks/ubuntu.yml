@@ -1,0 +1,36 @@
+---
+#
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2020 The Authors.
+# Authors: Bin Liang  <@liangbin>
+#
+# Summary: Tasks for Ubuntu specific setup
+#
+# https://bugs.launchpad.net/cloud-images/+bug/1573095
+#remove console=ttyS0 from GRUB_CMD_LINUX_DEFAULT in /etc/default/grub.d/50-cloudimg-settings.cfg, leaving only console=tty1, and then run "sudo update-grub".
+#GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0"
+# GRUB_CMDLINE_LINUX_DEFAULT="console=tty1"
+# $ sudo update-grub
+- name: disable serial port 1/2
+  become: yes
+  shell: >
+    if [ -f /etc/default/grub.d/50-cloudimg-settings.cfg ]; then sed -i 's/ console=ttyS0//g' /etc/default/grub.d/50-cloudimg-settings.cfg; fi
+  args:
+    executable: /bin/bash
+
+- name: disable serial port 2/2
+  become: yes
+  shell: >
+    if [ -f /etc/default/grub.d/50-cloudimg-settings.cfg ]; then update-grub; fi
+  args:
+    executable: /bin/bash
+
+# Fixing cluster DNS issue on current Ubuntu host (> 18.04), see https://github.com/kubernetes/kubeadm/issues/787
+- name: Adjust systemd-resolved for cluster DNS
+  become: yes
+  shell: >
+    rm /etc/resolv.conf; ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  args:
+    executable: /bin/bash
+  when: site != "aws"
