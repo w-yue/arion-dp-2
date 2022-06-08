@@ -116,6 +116,8 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         if node_response_data.status_code >= 300:
             print('Failed to create nodes, pseudo controller will stop now.')
             return False
+        print('Sleep 10 seconds before setting the next NODE')
+        time.sleep(10)
 
     json_content_for_aca = dict()
     json_content_for_aca['vpc_response'] = {}
@@ -250,16 +252,17 @@ def generate_ports(ports_to_create):
         if i % 10 != 0:
             port_template_to_use = get_port_template(i)
             port_id = '{0:07d}ae-7dec-11d0-a765-00a0c9341120'.format(i)
-            ip_2nd_octet = str((i // 10000))
-            ip_3rd_octet = str((i % 10000 // 100))
-            ip_4th_octet = str((i % 100))
-            ip = ips_ports_ip_prefix + ip_2nd_octet + \
-                "." + ip_3rd_octet + "." + ip_4th_octet
-            mac = mac_port_prefix + ip_2nd_octet + ":" + ip_3rd_octet + ":" + ip_4th_octet
-            port_template_to_use['port_id'] = port_id
-            port_template_to_use['ips_port'][0]['ip'] = ip
-            port_template_to_use['mac_port'] = mac
-            all_ports_generated.append(port_template_to_use)
+            ip_2nd_octet = str((i // (255*255)))
+            ip_3rd_octet = str((i % (255*255) // 255))
+            ip_4th_octet = str((i % 255))
+            if int(ip_4th_octet) > 1:
+                ip = ips_ports_ip_prefix + ip_2nd_octet + \
+                    "." + ip_3rd_octet + "." + ip_4th_octet
+                mac = mac_port_prefix + "%02x"%int(ip_2nd_octet) + ":" + "%02x"%int(ip_3rd_octet) + ":" + "%02x"%int(ip_4th_octet)
+                port_template_to_use['port_id'] = port_id
+                port_template_to_use['ips_port'][0]['ip'] = ip
+                port_template_to_use['mac_port'] = mac
+                all_ports_generated.append(port_template_to_use)
         i = i + 1
     return all_ports_generated
 
@@ -303,6 +306,9 @@ def run():
     testcases_to_run = ['DISABLED_zeta_scale_container',
                         'DISABLED_zeta_scale_container']
     execute_ping = True
+
+    run_aca_setup_in_background = False
+
     # second argument should be amount of ports to be generated
     if len(arguments) > 1:
         ports_to_create = int(arguments[1])
@@ -378,20 +384,32 @@ def run():
     cmd_parent = [
         f'cd {server_aca_repo_path};sudo ./build/tests/aca_tests --gtest_also_run_disabled_tests --gtest_filter=*{testcases_to_run[1]}']
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_child = executor.submit(
-            exec_sshCommand_aca, aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500, False)
-        future_parent = executor.submit(
-            exec_sshCommand_aca, aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_parent, 1500, False)
-        result_child = future_child.result()
-        result_parent = future_parent.result()
-        text_file_child = open("output_child.log", "w")
-        text_file_child.write(result_child['data'][0])
-        text_file_child.close()
-        text_file_parent = open("output_parent.log", "w")
-        text_file_parent.write(result_parent['data'][0])
-        text_file_parent.close()
-        print("Port set up finished")
+
+    if run_aca_setup_in_background == False:
+        print('Running ACA set up, and need to wait until finished.')
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_child = executor.submit(
+                exec_sshCommand_aca, aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500, False)
+            future_parent = executor.submit(
+                exec_sshCommand_aca, aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_parent, 1500, False)
+            result_child = future_child.result()
+            result_parent = future_parent.result()
+            text_file_child = open("output_child.log", "w")
+            text_file_child.write(result_child['data'][0])
+            text_file_child.close()
+            text_file_parent = open("output_parent.log", "w")
+            text_file_parent.write(result_parent['data'][0])
+            text_file_parent.close()
+            print("Port set up finished")
+    else:
+        print('Running ACA setup IN THE BACKGROUND.')
+        import threading
+        child_thread = threading.Thread(target=exec_sshCommand_aca, args=[aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500, False])
+        parent_thread = threading.Thread(target=exec_sshCommand_aca, args=[aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500, False])
+        child_thread.start()
+        parent_thread.start()
+        print('Started the ACA setup threads in the background, will now sleep for 20 seconds before the next steps.')
+        time.sleep(20)
 
     test_end_time = time.time()
     print(

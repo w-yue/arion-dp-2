@@ -25,6 +25,8 @@ def init():
     global MAC_PRIVATE
     # Give it a default 
     MAC_PRIVATE = 0x928300000000
+    global hazelcast_ip_port
+    hazelcast_ip_port = '127.0.0.1:8080'
     try:
         api_response = core_api.list_config_map_for_all_namespaces(label_selector='name=zgc-cluster-config')
         logger.info('Result for getting configmap: {}'.format(api_response))

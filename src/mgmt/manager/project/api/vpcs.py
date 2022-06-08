@@ -14,7 +14,7 @@ from flask import (
 )
 
 from project.api import settings
-from project.api.models import Vpc
+from project.api.models import VPC, Vpc
 from project import db
 from project.api.utils import getGWsFromIpRange
 import time
@@ -29,6 +29,19 @@ def extendVpcResp(vpc):
     respond['port_ibo'] = settings.activeZgc["port_ibo"]
     respond['gws'] = getGWsFromIpRange(settings.activeZgc["ip_start"], settings.activeZgc["ip_end"])
     return respond
+
+def set_up_vpc_from_hazelcast(arion_vpc: VPC):
+    logger.debug('Start to make a VPC.')
+    start_time = time.time()
+    vpc = Vpc(zgc_id = settings.activeZgc["zgc_id"], vpc_id = arion_vpc.vpc_id, vni = arion_vpc.vni)
+    db.session.add(vpc)
+    db.session.commit()
+    settings.vnis[arion_vpc.vpc_id] = arion_vpc.vni
+
+    response_object = extendVpcResp(vpc)
+    end_time = time.time()
+    logger.debug(f'Arion took {end_time - start_time} seconds to make a VPC')
+    return response_object
 
 @vpcs_blueprint.route('/vpcs', methods=['GET', 'POST'])
 def all_vpcs():

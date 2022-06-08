@@ -26,5 +26,5 @@ touch /var/log/gunicorn/error.log
 touch /var/log/gunicorn/access.log
 
 
-gunicorn -b 0.0.0.0:5000 manage:app --error-logfile /var/log/gunicorn/error.log --access-logfile /var/log/gunicorn/access.log --capture-output --log-level debug
+gunicorn -b 0.0.0.0:5000 manage:app --timeout 600 --error-logfile /var/log/gunicorn/error.log --access-logfile /var/log/gunicorn/access.log --capture-output --log-level debug
 

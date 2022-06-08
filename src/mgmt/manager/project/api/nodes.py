@@ -18,7 +18,7 @@ from flask import (
 )
 from kubernetes.client.rest import ApiException
 from kubernetes import client, config
-from project.api.models import Node, Zgc
+from project.api.models import ArionNode, Node, Zgc
 from project import db
 from project.api.utils import getGWsFromIpRange, get_mac_from_ip
 from project.api.settings import activeZgc, zgc_cidr_range, node_ips
@@ -32,6 +32,11 @@ nodes_blueprint = Blueprint('nodes', __name__)
 
 def update_droplet(droplet):
     try:
+        droplet['metadata'].pop('creationTimestamp', None)
+        # droplet['metadata'].pop('resourceVersion', None)
+        droplet['metadata'].pop('selfLink', None)
+        droplet['metadata'].pop('uid', None)
+        
         update_response = obj_api.replace_namespaced_custom_object(group='arion.com',
                                                                    version='v1',
                                                                    plural='droplets',
@@ -90,11 +95,15 @@ def droplet_update_itf_config(node_ip, droplet):
     entrances = []
     ips = droplet.get('spec', {}).get('ip')
     macs = droplet.get('spec', {}).get('mac')
+    itf = None
 
     for idx, ip in enumerate(ips):
         entrance = {'ip': ip, 'mac': macs[idx]}
         entrances.append(entrance)
-        itf = droplet.get('spec',{}).get('itf')
+        if itf is None:
+            itf = droplet.get('spec',{}).get('itf')
+            logger.info(f'Current itf: {itf}')
+
     itf_conf = {
         'interface': itf,
         'num_entrances': len(ips),
@@ -117,7 +126,123 @@ def node_unload_transit_xdp(ip, itf_tenant, itf_zgc):
     rpc = TrnRpc(ip)
     rpc.unload_transit_xdp(ip, itf_tenant, itf_zgc)
     del rpc
-    
+
+def set_up_node_from_hazelcast(arion_node: ArionNode):
+    start_time = time.time()
+    logger.debug('From Hazelcast: Start to make one node and one droplet for this node.')
+    new_node = Node()
+    new_node.node_id = str(uuid.uuid4())
+    # Set the node's zgc_id to active_zgc
+    new_node.zgc_id = activeZgc["zgc_id"]#arion_node.zgc_id
+    new_node.name = arion_node.name
+    new_node.description = arion_node.description
+    new_node.ip_control = arion_node.ip_control
+    new_node.id_control = arion_node.id_control
+    new_node.pwd_control = arion_node.pwd_control
+    new_node.inf_tenant = arion_node.inf_tenant
+    new_node.mac_tenant = arion_node.mac_tenant
+    new_node.inf_zgc = arion_node.inf_zgc
+    new_node.mac_zgc = arion_node.mac_zgc
+    node_load_transit_xdp(new_node.ip_control, new_node.inf_tenant, new_node.inf_zgc)
+    # Try to get the existing droplets        
+    all_droplets_in_zgc = obj_api.list_cluster_custom_object(group='arion.com',
+                                                                version='v1',
+                                                                plural='droplets',
+                                                                label_selector='zgc_id='+new_node.zgc_id+',network=tenant'
+                                                            )['items']
+    zgc_ip_list = new_node.ip_control.split('.')
+        
+    ip_range = zgc_cidr_range.split('/')
+    cidr_list = ip_range[0].split('.')
+
+    # Only zgc_cidr postfix 8, 16 and 24 are supported
+    for i in range(int(ip_range[1])//8):
+        zgc_ip_list[i] = cidr_list[i]
+
+    zgc_ip = '.'.join(zgc_ip_list)
+    zgc_mac = new_node.mac_zgc
+
+    if len(all_droplets_in_zgc)>0:
+        total_ip = 0
+        droplet_that_can_give_ip_mac = []
+        for droplet in all_droplets_in_zgc:
+            droplet_spec = droplet['spec']
+            droplet_ip_list = droplet_spec['ip']
+            droplet_mac_list = droplet_spec['mac']
+            total_ip = total_ip + len(droplet_ip_list)
+            if len(droplet_ip_list) > 1 and len(droplet_mac_list) > 1:
+                droplet_that_can_give_ip_mac.append(droplet)
+        number_of_droplets = len(all_droplets_in_zgc)
+        number_of_ip_new_droplet_gets = total_ip // (number_of_droplets + 1) 
+        logger.info('number of ip new droplets gets {}-{}-{}'.format(number_of_ip_new_droplet_gets, total_ip, number_of_droplets))
+        ip_for_new_droplet = []
+        modified_droplets = dict()
+        if number_of_ip_new_droplet_gets > 0 : # each droplet should have 1 or more ip, assign ip / mac from existing droplets
+            current_length_of_ip_list = len(ip_for_new_droplet)
+            # sort these droplets in descending order, so droplet with the most IPs will be in the front.
+            droplet_that_can_give_ip_mac.sort(key=lambda x : len(x['spec']['ip']), reverse=True)
+            # only one IP/mac for other droplets
+            while len(ip_for_new_droplet) < 1:
+                for droplet in droplet_that_can_give_ip_mac:
+                    droplet_spec = droplet['spec']
+                    droplet_ip_list = droplet_spec['ip']
+                    if len(droplet_ip_list) > 1:
+                        droplet_name = droplet['metadata']['name']
+                        if droplet_name not in modified_droplets:
+                            modified_droplets[droplet_name] = droplet
+                        popped_ip = droplet_ip_list.pop()
+                        ip_for_new_droplet.append(popped_ip)
+                        droplet_mac_list = droplet_spec['mac']
+                        mac_from_ip =  get_mac_from_ip(popped_ip)
+                        if mac_from_ip in droplet_mac_list:
+                            droplet_mac_list.remove(mac_from_ip)
+                        else:
+                            droplet_mac_list.pop()
+                        droplet['spec']['ip'] = droplet_ip_list
+                        droplet['spec']['mac'] = droplet_mac_list
+                if current_length_of_ip_list == len(ip_for_new_droplet):
+                    logger.info('Breaking the while loop as there is no new ip added')
+                    break
+                else:
+                    current_length_of_ip_list = len(ip_for_new_droplet)
+            macs_for_new_droplet = [get_mac_from_ip(ip) for ip in ip_for_new_droplet]
+
+            for droplet_name in modified_droplets:
+                update_droplet(modified_droplets[droplet_name])
+
+            create_droplet(name='droplet-tenant-' + new_node.name.replace('_', "-").lower(), 
+                            ip=ip_for_new_droplet, 
+                            mac=macs_for_new_droplet,
+                            itf=new_node.inf_tenant, 
+                            node_ip= new_node.ip_control,
+                            network='tenant', 
+                            zgc_id=new_node.zgc_id)
+
+            logger.info('Finished updating and adding droplets.')
+        else:
+            logger.error('Not enough ip to assign for the new droplet.')
+    else:
+        logger.info("First nodes in the ZGC cluster, it gets all the IPs")
+        zgc = Zgc.query.filter_by(zgc_id=new_node.zgc_id).first()
+        if zgc is not None:
+            gws = getGWsFromIpRange(zgc.ip_start, zgc.ip_end)
+            create_droplet(name='droplet-tenant-' + new_node.name.replace('_', "-").lower(), 
+                            ip=[gw['ip'] for gw in gws], 
+                            mac=[gw['mac'] for gw in gws],
+                            itf=new_node.inf_tenant,
+                            node_ip= new_node.ip_control,
+                            network='tenant', 
+                            zgc_id=new_node.zgc_id)
+        else:
+            logger.error("There's no zgc with zgc_id: {} in the database!".format(new_node.zgc_id))
+            return jsonify({'error':'No such zgc'})
+    # commit change to data at last
+    db.session.add(new_node)
+    db.session.commit()
+
+    end_time = time.time()
+    logger.debug(f'Arion took {end_time - start_time} seconds to make a node and its two droplets.')
+
 @nodes_blueprint.route('/nodes', methods=['GET', 'POST'])
 def all_nodes():
     status_code = 200

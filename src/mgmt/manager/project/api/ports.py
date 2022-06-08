@@ -16,7 +16,7 @@ from flask import (
     Blueprint, jsonify, request
 )
 from project import db
-from project.api.models import Port, Host, EP
+from project.api.models import Port, Host, EP, RoutingRule
 from project.api.settings import node_ips, vnis
 from project.api.utils import ip_to_int, mac_to_int
 from project import db
@@ -31,8 +31,10 @@ ports_blueprint = Blueprint('ports', __name__)
 
 eps = []
 
+
 def ports_update_eps_config():
-    eps_list = [eps[i:i + EP_BATCH_MAX] for i in range(0, len(eps), EP_BATCH_MAX)]
+    eps_list = [eps[i:i + EP_BATCH_MAX]
+                for i in range(0, len(eps), EP_BATCH_MAX)]
     for eps_chunk in eps_list:
         eps_conf = {
             'size': len(eps_chunk),
@@ -44,6 +46,68 @@ def ports_update_eps_config():
             rpc.update_ep(eps_conf)
             del rpc
     eps.clear()
+
+def set_up_ports_in_the_same_vpc_from_hazelcast(entry_list, vpc_id):
+    amount_of_ports = len(entry_list)
+    logger.debug(f'Start to make {amount_of_ports} ports in vpc: {vpc_id}.')
+    start_time = time.time()
+    ports_to_add = []
+    eps_to_add_to_db = []
+    hosts_to_add = []
+    host_ip_node_lookup_set = set()
+    for v in entry_list:
+        routing_rule: RoutingRule = v
+        port = {
+                'port_id': routing_rule.id,
+                'mac_port': routing_rule.mac,
+                'vpc_id': vpc_id,
+                'host_id': '',
+                'eps': []
+            }
+
+        ip_node_to_find = routing_rule.hostip
+        host = Host.query.filter_by(ip_node=ip_node_to_find).first()
+        if (host is None) and (ip_node_to_find not in host_ip_node_lookup_set):
+            host_to_add = {'mac_node': routing_rule.hostmac,
+                            'ip_node': ip_node_to_find,
+                            'host_id': str(uuid.uuid4())}
+            port['host_id'] = host_to_add['host_id']
+            hosts_to_add.append(host_to_add)
+            host_ip_node_lookup_set.add(ip_node_to_find)
+        elif (host is not None):
+            port['host_id'] = host.host_id
+        else:
+            for host_to_add in hosts_to_add:
+                if host_to_add['ip_node'] == ip_node_to_find:
+                    port['host_id'] = host_to_add['host_id']
+                    break
+        # for ip in post_data['ips_port']:
+        ep_to_add_to_db = {
+            'ip': routing_rule.ip,
+            'vip': '',
+            'port_id': routing_rule.id
+        }
+        eps_to_add_to_db.append(ep_to_add_to_db)
+        ports_to_add.append(port)
+        ep_rpc = {
+            "vni": int(vnis.get(vpc_id)),
+            "ip": ip_to_int(routing_rule.ip),
+            "hip": ip_to_int(routing_rule.hostip),
+            "mac": mac_to_int(routing_rule.mac),
+            "hmac": mac_to_int(routing_rule.hostmac)
+        }
+        eps.append(ep_rpc)
+    db.session.bulk_insert_mappings(Host, hosts_to_add)
+    db.session.commit()
+    db.session.bulk_insert_mappings(Port, ports_to_add)
+    db.session.commit()
+    db.session.bulk_insert_mappings(EP, eps_to_add_to_db)
+    db.session.commit()
+    end_time = time.time()
+    logger.debug(
+        f'Arion took {end_time - start_time} seconds to make {amount_of_ports} ports')
+    ports_update_eps_config()
+    return
 
 @ports_blueprint.route('/ports', methods=['GET', 'POST'])
 def all_ports():
@@ -70,8 +134,8 @@ def all_ports():
             host = Host.query.filter_by(ip_node=ip_node_to_find).first()
             if (host is None) and (ip_node_to_find not in host_ip_node_lookup_set):
                 host_to_add = {'mac_node': post_data.get('mac_node'),
-                    'ip_node' : ip_node_to_find,
-                    'host_id' : str(uuid.uuid4())}
+                               'ip_node': ip_node_to_find,
+                               'host_id': str(uuid.uuid4())}
                 port['host_id'] = host_to_add['host_id']
                 hosts_to_add.append(host_to_add)
                 host_ip_node_lookup_set.add(ip_node_to_find)
@@ -84,19 +148,19 @@ def all_ports():
                         break
             for ip in post_data['ips_port']:
                 ep_to_add_to_db = {
-                                'ip': ip['ip'],
-                                'vip': ip['vip'],
-                                'port_id': post_data['port_id']
-                            }
+                    'ip': ip['ip'],
+                    'vip': ip['vip'],
+                    'port_id': post_data['port_id']
+                }
                 eps_to_add_to_db.append(ep_to_add_to_db)
             ports_to_add.append(port)
             ep_rpc = {
-                    "vni": int(vnis.get(post_data.get('vpc_id'))),
-                    "ip": ip_to_int(post_data['ips_port'][0]['ip']),
-                    "hip": ip_to_int(post_data.get('ip_node')),
-                    "mac": mac_to_int(post_data.get('mac_port')),
-                    "hmac": mac_to_int(post_data.get('mac_node'))
-                }
+                "vni": int(vnis.get(post_data.get('vpc_id'))),
+                "ip": ip_to_int(post_data['ips_port'][0]['ip']),
+                "hip": ip_to_int(post_data.get('ip_node')),
+                "mac": mac_to_int(post_data.get('mac_port')),
+                "hmac": mac_to_int(post_data.get('mac_node'))
+            }
             eps.append(ep_rpc)
         db.session.bulk_insert_mappings(Host, hosts_to_add)
         db.session.commit()
@@ -106,7 +170,8 @@ def all_ports():
         db.session.commit()
         response_object = portList
         end_time = time.time()
-        logger.debug(f'Arion took {end_time - start_time} seconds to make {amount_of_ports} ports')
+        logger.debug(
+            f'Arion took {end_time - start_time} seconds to make {amount_of_ports} ports')
         ports_update_eps_config()
         status_code = 201
     else:

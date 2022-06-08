@@ -11,6 +11,146 @@ from flask import current_app
 from sqlalchemy.sql import func
 
 from project import db
+from hazelcast.serialization.api import IdentifiedDataSerializable
+
+
+class ArionNode(IdentifiedDataSerializable):
+    def __init__(self,zgc_id=None, description=None, name=None, ip_control=None, id_control=None, pwd_control=None, inf_tenant=None, mac_tenant=None, inf_zgc=None, mac_zgc=None):
+        self.zgc_id = zgc_id
+        self.description = description
+        self.name = name
+        self.ip_control = ip_control
+        self.id_control = id_control
+        self.pwd_control = pwd_control
+        self.inf_tenant = inf_tenant
+        self.mac_tenant = mac_tenant
+        self.inf_zgc = inf_zgc
+        self.mac_zgc = mac_zgc
+    
+    def get_type_id(self):
+        return 3
+    
+    def get_class_id(self):
+        return 3
+    
+    def get_factory_id(self):
+        return 1
+    
+    def write_data(self, object_data_output):
+        object_data_output.write_string(self.zgc_id)
+        object_data_output.write_string(self.description)
+        object_data_output.write_string(self.name)
+        object_data_output.write_string(self.ip_control)
+        object_data_output.write_string(self.id_control)
+        object_data_output.write_string(self.pwd_control)
+        object_data_output.write_string(self.inf_tenant)
+        object_data_output.write_string(self.mac_tenant)
+        object_data_output.write_string(self.inf_zgc)
+        object_data_output.write_string(self.mac_zgc)
+    
+    def read_data(self, object_data_input):
+        self.zgc_id = object_data_input.read_string()
+        self.description = object_data_input.read_string()
+        self.name = object_data_input.read_string()
+        self.ip_control = object_data_input.read_string()
+        self.id_control = object_data_input.read_string()
+        self.pwd_control = object_data_input.read_string()
+        self.inf_tenant = object_data_input.read_string()
+        self.mac_tenant = object_data_input.read_string()
+        self.inf_zgc = object_data_input.read_string()
+        self.mac_zgc = object_data_input.read_string()
+
+class VPC(IdentifiedDataSerializable):
+    def __init__(self, vpc_id=None, vni=None):
+        self.vpc_id = vpc_id
+        self.vni = vni
+    
+    def get_type_id(self):
+        return 4
+    
+    def get_class_id(self):
+        return 4
+    
+    def get_factory_id(self):
+        return 1
+    
+    def write_data(self, object_data_output):
+        object_data_output.write_string(self.vpc_id)
+        object_data_output.write_int(self.vni)
+    
+    def read_data(self, object_data_input):
+        self.vpc_id = object_data_input.read_string()
+        self.vni = object_data_input.read_int()
+class ArionGatewayCluster(IdentifiedDataSerializable):
+    def __init__(self, name=None, description=None, ip_start=None, ip_end=None, port_ibo=None, overlay_type=None):
+        self.name = name
+        self.description = description
+        self.ip_start = ip_start
+        self.ip_end = ip_end
+        self.port_ibo = port_ibo
+        self.overlay_type = overlay_type
+        
+    def get_type_id(self):
+        return 2
+    
+    def get_class_id(self):
+        return 2
+    
+    def get_factory_id(self):
+        return 1
+    
+    def write_data(self, object_data_output):
+        object_data_output.write_string(self.name)
+        object_data_output.write_string(self.description)
+        object_data_output.write_string(self.ip_start)
+        object_data_output.write_string(self.ip_end)
+        object_data_output.write_int(self.port_ibo)
+        object_data_output.write_string(self.overlay_type)
+    
+    def read_data(self, object_data_input):
+        self.name = object_data_input.read_string()
+        self.description = object_data_input.read_string()
+        self.ip_start = object_data_input.read_string()
+        self.ip_end = object_data_input.read_string()
+        self.port_ibo = object_data_input.read_int()
+        self.overlay_type = object_data_input.read_string()
+
+class RoutingRule(IdentifiedDataSerializable):
+    def __init__(self, id=None, mac=None, hostmac=None, hostip=None, ip=None, vni=None, version=None):
+        self.id = id
+        self.mac = mac
+        self.hostmac = hostmac
+        self.hostip = hostip
+        self.ip = ip
+        self.vni = vni
+        self.version = version
+
+    def get_type_id(self):
+        return 1
+
+    def get_class_id(self):
+        return 1
+
+    def get_factory_id(self):
+        return 1
+
+    def write_data(self, object_data_output):
+        object_data_output.write_string(self.id)
+        object_data_output.write_string(self.mac)
+        object_data_output.write_string(self.hostmac)
+        object_data_output.write_string(self.hostip)
+        object_data_output.write_string(self.ip)
+        object_data_output.write_int(self.vni)
+        object_data_output.write_int(self.version)
+
+    def read_data(self, object_data_input):
+        self.id = object_data_input.read_string()
+        self.mac = object_data_input.read_string()
+        self.hostmac = object_data_input.read_string()
+        self.hostip = object_data_input.read_string()
+        self.ip = object_data_input.read_string()
+        self.vni = object_data_input.read_int()
+        self.version = object_data_input.read_int()
 
 
 class Book(db.Model):

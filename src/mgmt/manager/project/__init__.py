@@ -68,6 +68,9 @@ def create_app(script_info=None):
 
     from project.api.eps import eps_blueprint
     app.register_blueprint(eps_blueprint)
+    
+    from project.api.default_setup import default_setup_blueprint
+    app.register_blueprint(default_setup_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor

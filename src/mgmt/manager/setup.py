@@ -14,7 +14,8 @@ setup(
         'Flask-SQLAlchemy>=2.4.1',
         'gunicorn>=20.0.4',
         'psycopg2-binary==2.8.4',
-        'kubernetes==11.0.0'
+        'kubernetes==11.0.0',
+        'hazelcast-python-client>=5.0.1'
     ],
     setup_requires=['pytest-runner', 'flake8'],
     tests_require=['pytest'],

@@ -14,7 +14,7 @@ from flask import (
 )
 
 from project.api import settings
-from project.api.models import Zgc
+from project.api.models import ArionGatewayCluster, Zgc
 from project import db
 import time
 import logging
@@ -22,6 +22,29 @@ import logging
 logger = logging.getLogger()
 zgcs_blueprint = Blueprint('zgcs', __name__)
 
+
+def set_up_cluster_from_hazelcast(cluster: ArionGatewayCluster):
+    logger.debug('Start to setup arion gateway cluster from Hazelcast Data.',)
+    start_time = time.time()
+    logger.info(f'Setting up cluster {cluster.name}')
+    new_zgc = Zgc()
+    new_zgc.zgc_id = str(uuid.uuid4())
+    new_zgc.name = cluster.name
+    new_zgc.description = cluster.description
+    new_zgc.ip_start = cluster.ip_start
+    new_zgc.ip_end = cluster.ip_end
+    new_zgc.port_ibo = cluster.port_ibo
+    new_zgc.overlay_type = cluster.overlay_type
+    db.session.add(new_zgc)
+    db.session.commit()
+
+    if not bool(settings.activeZgc):
+        settings.activeZgc["zgc_id"] = new_zgc.zgc_id
+        settings.activeZgc["ip_start"] = new_zgc.ip_start
+        settings.activeZgc["ip_end"] = new_zgc.ip_end
+        settings.activeZgc["port_ibo"] = new_zgc.port_ibo
+    end_time = time.time()
+    logger.debug(f'Arion took {end_time - start_time} seconds to make a Arion Gateway Cluster.')
 
 @zgcs_blueprint.route('/zgcs', methods=['GET', 'POST'])
 def all_zgcs():
