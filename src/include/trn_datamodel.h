@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+// The following code is originally derived from zeta project
 /**
  * @file datamodel.h
- * @author Sherif Abdelwahab (@zasherif)
- *         Wei Yue           (@w-yue)
+ * @author Wei Yue           (@w-yue)
  *
  * @brief Data models between user and kernel space. data propagated
  * from control-plane through transitd.
  *
- * @copyright Copyright (c) 2019-2022 The Authors.
+ * @copyright Copyright (c) 2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@
 #define TRAN_MAX_CHAIN 128
 
 /* Set max total number of endpoints */
-#define TRAN_MAX_NEP 128*1024
+#define TRAN_MAX_NEP 1024*1024*4
 /* Set max number of host IPs a (scaled) endpoint can be mapped to */
 #define TRAN_MAX_REMOTES 64
 #define TRAN_MAX_ITF 128

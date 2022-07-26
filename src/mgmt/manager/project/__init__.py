@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2020 The Authors.
+# Copyright (c) 2022 The Authors.
 #
-# Authors: Bin Liang <@liangbin>
+# Authors: Wei  Yue    <@w-yue>
 #
 # Summary: Factory pattern for Arion-manager NBI API app
 #

@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 #
-# Copyright (c) 2020 The Authors.
-# Authors: Bin Liang  <@liangbin>
+# Copyright (c) 2022 The Authors.
+# Authors: Wei Yue  <@w-yue>
 #
 # Summary: Script to deploy ingress-nginx controller to target k8s cluster
 #
