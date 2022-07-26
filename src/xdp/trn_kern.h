@@ -226,42 +226,6 @@ static inline __u8 trn_append_src(void *data, void *data_end,
 }
 
 __ALWAYS_INLINE__
-static inline __u8 trn_append_sinfo(struct transit_packet *pkt) {
-	unsigned int len; // = pkt->data_end - pkt->data;
-	unsigned char *addon; // = (unsigned char *)(pkt->data - 16 + len);    // was -16
-	//if (bpf_xdp_adjust_tail(pkt->xdp, 16))
-	//	return -1;
-	bpf_debug("XXXX pkt src: 0x%x, dst: 0x%x\n",
-		  pkt->data, pkt->data_end);
-	if (pkt->data +1 > pkt->data_end) return -1;
-
-	len = pkt->data_end - pkt->data;
-	if (len < 16) return -1;
-	
-	addon = (unsigned char *)(pkt->data + (16 - len)); 
-
-	//if (addon+16 > pkt->data_end) return -1;
-	
-	addon[1] = pkt->eth->h_source[0];
-	addon[2] = pkt->eth->h_source[1];
-	addon[3] = pkt->eth->h_source[2];
-	addon[4] = pkt->eth->h_source[3];
-	addon[5] = pkt->eth->h_source[4];
-	addon[6] = pkt->eth->h_source[5];
-
-	addon[7] = (__u8)(pkt->vni >> 16);
-	addon[8] = (__u8)(pkt->vni >> 8);
-	addon[9] = (__u8)(pkt->vni);
-
-	addon[10] = (__u8)(pkt->ip->saddr >> 24);
-	addon[11] = (__u8)(pkt->ip->saddr >> 16);
-	addon[12] = (__u8)(pkt->ip->saddr >> 8);
-	addon[13] = (__u8)(pkt->ip->saddr);
-
-	return 0;
-}
-
-__ALWAYS_INLINE__
 static __be32 trn_get_vni(const __u8 *vni)
 {
 	/* Big endian! */
