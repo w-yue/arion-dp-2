@@ -103,4 +103,4 @@ $ ./deploy/arion_deploy.sh -d lab
 ```
 $ ./test/run.py
 ```
-In Run.py, it sets up compute nodes(which should have ACA set up in previous step) by creating docker containers in the CNs and does initial ping tests between docker containers from different compute nodes.
+In run.py, it sets up compute nodes(which should have ACA set up in previous step) by creating docker containers in the CNs and does initial ping tests between docker containers from different compute nodes.
