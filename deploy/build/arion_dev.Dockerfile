@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MIT
 #
-# Copyright (c) 2022 The Authors.
-# Authors: Wei Yue           <@w-yue>
-#
 # Summary: arion_dev base container for development and dev test
 
 FROM ubuntu:20.04
