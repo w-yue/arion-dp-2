@@ -1,5 +1,5 @@
 {
-  "arion_api_ip": "http://10.213.43.99",
+  "arion_api_ip": "http://10.222.0.100",
   "aca_nodes": {
     "ip": [
       "172.16.1.73",
@@ -68,26 +68,26 @@
   "NODE_data": [
     {
       "zgc_id": "zgc_id",
-      "description": "znode6",
-      "name": "znode6",
-      "ip_control": "10.213.43.215",
+      "description": "znode0",
+      "name": "znode0",
+      "ip_control": "10.222.0.111",
       "id_control": "********",
       "pwd_control": "********",
-      "inf_tenant": "enp4s0f1",
+      "inf_tenant": "enp4",
       "mac_tenant": "c0:bf:c0:5e:1a:34",
-      "inf_zgc": "enp4s0f0",
+      "inf_zgc": "enp3",
       "mac_zgc": "c0:bf:c0:5e:1a:33"
     },
     {
       "zgc_id": "zgc_id",
-      "description": "znode5",
-      "name": "znode5",
-      "ip_control": "10.213.43.216",
+      "description": "znode1",
+      "name": "znode1",
+      "ip_control": "10.222.0.112",
       "id_control": "********",
       "pwd_control": "********",
-      "inf_tenant": "enp4s0f1",
+      "inf_tenant": "enp4",
       "mac_tenant": "c0:bf:c0:5e:1a:2e",
-      "inf_zgc": "enp4s0f0",
+      "inf_zgc": "enp3",
       "mac_zgc": "c0:bf:c0:5e:1a:2d"
     }
   ],
