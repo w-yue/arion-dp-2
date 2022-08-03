@@ -133,7 +133,6 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 	ipv4_flow_t *flow = &pkt->fctx.flow;
 	__u64 csum = 0;
 	__u16 len = 0;
-	//__u16 len = pkt->data_end - pkt->data;
 
 	pkt->inner_ip = (void *)pkt->inner_eth + sizeof(*pkt->inner_eth);
 
@@ -227,24 +226,6 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		struct xdp_hints_src *h_src;
 		__u8 offset = sizeof(*h_src);
 
-/*
-		if (bpf_xdp_adjust_tail(pkt->xdp, offset)) {
-			bpf_debug("[Transit:%d] XXXX TX: Appending IP pkt failed.\n", __LINE__);
-		} else {
-
-			pkt->data = (void *)(long)pkt->xdp->data;
-			pkt->data_end = (void *)(long)pkt->xdp->data_end;
-			__u16 len = pkt->data_end - pkt->data;
-			bpf_debug("[Transit:%d] XXXX TX: Appending IP pkt succeeded(len=%d -- %d).\n", 
-				__LINE__, len, offset);
-		}
-
-		if (pkt->ip + 1 > pkt->data_end) {
-			bpf_debug("[Transit:%d] ABORTED: Bad IP frame\n", pkt->itf_idx);
-			return XDP_ABORTED;
-		}
-*/
-
 		__u16 ip_tot_len = bpf_ntohs(pkt->ip->tot_len);
 
 		if (ip_tot_len < 2) {
@@ -255,10 +236,7 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		if ((void *)pkt->data + ip_tot_len + offset + 14 > pkt->data_end) {  // 14 is the size of etherhdr
 			return XDP_ABORTED;
 		}
-		//if (bpf_xdp_adjust_tail((struct xdp_md *)pkt->xdp, offset)) {
-		//	bpf_debug("[Transit:%d] XXXX TX: bpf_xdp_adjust_tail failed", __LINE__);
-		//	return XDP_DROP;
-		//}
+
 		h_src = (void *)pkt->data + ip_tot_len + 14;
 		h_src->saddr = pkt->ip->saddr;
 		h_src->vni = pkt->vni;
@@ -272,54 +250,6 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		
 		bpf_debug("[Transit:%d] XXXXX TX: len=%d -- %d.\n", 
 				__LINE__, pkt->data_end - pkt->data, ip_tot_len);
-				
-		if (modLength) {
-			//trn_set_udp_len_csum(pkt->udp, sizeof(struct xdp_hints_src), pkt->data_end);
-			//trn_set_len_csum(pkt->ip, sizeof(struct xdp_hints_src), pkt->data_end);
-			//trn_set_len_csum(pkt->inner_ip, sizeof(struct xdp_hints_src), pkt->data_end);
-		}
-	}
-
-	//if (addHeader && flow->protocol != IPPROTO_ICMP && !pkt_not_add_head) {
-	if (addHeader && !pkt_not_add_head) {
-		void *data_end = (void *)(long)pkt->data_end;
-		//struct ethhdr eth_cpy;
-		struct ethhdr *eth;
-		struct xdp_hints_src *h_src;
-
-		// First copy the original Ethernet header
-		//__builtin_memcpy(&eth_cpy, pkt->eth, sizeof(eth_cpy));
-
-		// Then add space in front of the packet
-		//if (bpf_xdp_adjust_head(pkt->xdp, 0 + (int)sizeof(*h_src))) {
-		//	bpf_debug("Transit:%d] XXXXX adjust header failed\n", __LINE__);
-		//	return -1;
-		//}
-		data_end = (void *)(long)pkt->data_end;
-		eth = (void *)(long)pkt->data;
-		
-		if (eth + 1  > data_end) {
-			return -1;
-		}
-
-		//__builtin_memcpy(eth, &eth_cpy, sizeof(*eth));
-		
-		h_src = (void *)(eth + 1);
-		if (h_src + 1 > data_end) {
-			return -1;
-		}
-		h_src->saddr = pkt->ip->saddr;
-		h_src->vni = pkt->vni;
-		h_src->flags = 0x5354;  //
-		h_src->h_source[0] = pkt->eth->h_source[0];
-		h_src->h_source[1] = pkt->eth->h_source[1];
-		h_src->h_source[2] = pkt->eth->h_source[2];
-		h_src->h_source[3] = pkt->eth->h_source[3];
-		h_src->h_source[4] = pkt->eth->h_source[4];
-		h_src->h_source[5] = pkt->eth->h_source[5];
-		
-		bpf_debug("[Transit:%d] XXXXX TX: len=%d.\n", 
-				__LINE__, pkt->data_end - pkt->data);
 	}
 
 	bpf_debug("[Transit:%d] XXXX TX: Forward IP pkt from vni:%d ip:0x%x\n",
@@ -610,7 +540,6 @@ static __inline int trn_process_eth(struct transit_packet *pkt)
 
 	// there's some logic error in assigning entrances for each itf
 	for (i = 0; i < pkt->itf->num_entrances && i < TRAN_MAX_ZGC_ENTRANCES; i++) {
-	//for (i = 0; i < 1; i++) {  // ugly hack test
 		if (trn_is_mac_equal(pkt->eth->h_dest, pkt->itf->entrances[i].mac)) {
 
 			bpf_debug("[Transit:%d] XXX received packet at mac:%x..%x\n",
@@ -644,21 +573,7 @@ int _transit(struct xdp_md *ctx)
 				__LINE__, len, apendlen);
 		}
 	}
-//
-	if (addHeader) {
-		__u8 apendlen = sizeof(struct xdp_hints_src);
-		bpf_debug("[Transit::%d] XXXX Tx: addr: %x, len=%d\n", 
-				__LINE__, ctx->data, ctx->data_end - ctx->data);
-		pkt_not_add_head = bpf_xdp_adjust_head(ctx, sizeof(struct xdp_hints_src));
-		if (pkt_not_add_head) {
-			bpf_debug("[Transit:%d] XXXX TX: Adjust IP pkt header failed.\n", __LINE__);
-		} else {
-			__u16 len = ctx->data_end - ctx->data;
-			bpf_debug("[Transit:%d] XXXX TX: Adjust IP pkt headersucceeded(len=%d -- %d).\n", 
-				__LINE__, len, apendlen);
-		}		
-	}
-//
+
 	struct transit_packet pkt;
 	pkt.data = (void *)(long)ctx->data;
 	pkt.data_end = (void *)(long)ctx->data_end;

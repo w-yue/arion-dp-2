@@ -69,8 +69,6 @@
 #endif
 
 const int appendTail = 0;
-const int modLength = 0;
-const int addHeader = 0;
 
 struct trn_gnv_scaled_ep_data {
 	__u8 msg_type;

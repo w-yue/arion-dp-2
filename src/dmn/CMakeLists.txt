@@ -56,14 +56,14 @@ set(DMN_MOCKS "-Wl,--wrap=bpf_map_update_elem \
     -Wl,--wrap=bpf_map__reuse_fd \
     -Wl,--wrap=bpf_object__open_file")
 
-add_executable(test_dmn ${RPCGEN_SVC} ${TEST_SOURCE})
-add_dependencies(test_dmn libbpf rpcgen)
+#add_executable(test_dmn ${RPCGEN_SVC} ${TEST_SOURCE})
+#add_dependencies(test_dmn libbpf rpcgen)
 # Add test coverage compiler flags
-target_compile_options(test_dmn PRIVATE -fprofile-arcs -ftest-coverage)
+#target_compile_options(test_dmn PRIVATE -fprofile-arcs -ftest-coverage)
 # Add CMocka unit test and cJSON to linker flags
-target_link_libraries(test_dmn extern -lgcov --coverage -lcmocka ${DMN_MOCKS})
-set_target_properties(test_dmn PROPERTIES
-                      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/tests
-                      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/tests
-)
-add_test(NAME test_dmn COMMAND test_dmn)
+#target_link_libraries(test_dmn extern -lgcov --coverage -lcmocka ${DMN_MOCKS})
+#set_target_properties(test_dmn PROPERTIES
+#                      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/tests
+#                      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/tests
+#)
+#add_test(NAME test_dmn COMMAND test_dmn)
