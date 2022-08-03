@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 The Authors.
+# Copyright (c) 2020-22 The Authors.
 
-# Author: Wei Yue   <@w-yue>
+# Author: Sherif Abdelwahab <@zasherif>
+#         Phu Tran          <@phudtran>
+#         Wei Yue           <@w-yue>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

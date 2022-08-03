@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// The following code is originally derived from zeta project
 /**
- * @file datamodel.h
- * @author Wei Yue           (@w-yue)
+ * 
+ * @file trn_datamodel.h
+ * @author Sherif Adelwahab     (@zasherif)
+ *         Wei Yue              (@w-yue)
  *
  * @brief Data models between user and kernel space. data propagated
  * from control-plane through transitd.
  *
- * @copyright Copyright (c) 2022 The Authors.
+ * @copyright Copyright (c) 2019-2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

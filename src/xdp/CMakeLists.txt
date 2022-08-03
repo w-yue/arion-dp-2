@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 #
-# Copyright (c) 2022 The Authors.
-# Authors: Wei Yue         <@w-yue>
+# Copyright (c) 2020-2022 The Authors.
+# Authors: Bin Liang       <@liangbin>
+#          Wei Yue         <@w-yue>
 #
-# Summary: xdp CMake listfile for arion project
+# Summary: xdp CMake listfile for Arion DP project
 
 message("Processing src/xdp/CMakeList.txt")
 

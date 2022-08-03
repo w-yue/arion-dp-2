@@ -1,4 +1,8 @@
 # SPDX-License-Identifier: MIT
+# This file is originated from Zeta project
+#
+# Copyright (c) 2022 The Authors.
+# Authors: Wei Yue           <@w-yue>
 #
 # Summary: arion_dev base container for development and dev test
 

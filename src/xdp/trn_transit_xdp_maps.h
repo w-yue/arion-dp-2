@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * @file transit_maps.h
- * @author Wei  Yue          (@w-yue)
+ * @author Sherif Abdelwahab (@zasherif)
+ *         Wei  Yue          (@w-yue)
  * 
  * @brief Defines ebpf maps of XDP
  *
- * @copyright Copyright (c) 2022 The Authors.
+ * @copyright Copyright (c) 2020-2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

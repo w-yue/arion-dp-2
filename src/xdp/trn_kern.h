@@ -2,12 +2,13 @@
 // The following code is originally derived from Zeta project
 
 /**
- * @file transit_kern.h
- * @author Wei Yue           (@w-yue)
+ * @file trn_kern.h
+ * @author Sherif Abdelwahab (@zasherif)
+ *         Wei Yue           (@w-yue)
  *
  * @brief Helper functions, macros and data structures.
  *
- * @copyright Copyright (c) 2022 The Authors.
+ * @copyright Copyright (c) 2019-2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
