@@ -10,19 +10,25 @@
   },
   "aca_nodes_2": [
     {
-      "ip": "172.16.17.73",
-      "mac": "48:7b:6b:b9:e2:9a",
-      "username": "********",
-      "password": "********"
+      "ip": "192.168.20.92",
+      "mac": "e8:bd:d1:01:77:ec",
+      "username": "***",
+      "password": "***"
+    },
+        {
+      "ip": "192.168.20.93",
+      "mac": "e8:bd:d1:01:77:e4",
+      "username": "***",
+      "password": "***"
     },
     {
-      "ip": "172.16.17.74",
-      "mac": "48:7b:6b:b9:e2:b2",
-      "username": "********",
-      "password": "********"
+      "ip": "192.168.20.94",
+      "mac": "e8:bd:d1:01:77:e5",
+      "username": "***",
+      "password": "***"
     }
   ],
-  "server_aca_repo_path": "/home/ubuntu/arion-dp/src/extern/alcor-control-agent",
+  "server_aca_repo_path": "/home/user/src/Github.com/zzxgzgz/alcor-control-agent",
   "ZGC_data": {
     "name": "ZGC_test106",
     "description": "ZGC_test106",
