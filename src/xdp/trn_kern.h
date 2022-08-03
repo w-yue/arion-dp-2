@@ -233,8 +233,8 @@ static __be32 trn_get_vni(const __u8 *vni)
 
 __ALWAYS_INLINE__
 static void trn_mod_vni(struct vxlanhdr *vxlan) {
-	//vxlan->rsvd3[0] = 0x80; // test
-	vxlan->rsvd1 |= 0x1; // Test
+	// vxlan->rsvd3[0] = 0x80; // test
+	// vxlan->rsvd1 |= 0x1; // Test
 }
 
 static void trn_set_vni(__be32 src, __u8 *vni)
