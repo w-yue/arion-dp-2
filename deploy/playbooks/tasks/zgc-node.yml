@@ -107,7 +107,7 @@
     /etc/init.d/rsyslog restart
     ip link set ens4 promisc on
     ip link set dev ens3 up mtu 9000
-    ip link set dev enp4 up mtu 9000
+    ip link set dev ens4 up mtu 9000
     nohup /trn_bin/transitd >/tmp/transitd.std 2>&1 &
   args: 
     executable: /bin/bash
