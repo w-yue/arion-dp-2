@@ -65,5 +65,5 @@ kubectl apply -f $DEPLOYMENTS_PATH/arion-ingress.yml
 
 echo "Apply the migrations and seed the database..."
 
-kubectl exec $POD_ZM -- python manage.py recreate_db
-kubectl exec $POD_ZM -- python manage.py seed_db
+kubectl exec $POD_ZM -- python3 manage.py recreate_db
+kubectl exec $POD_ZM -- python3 manage.py seed_db
