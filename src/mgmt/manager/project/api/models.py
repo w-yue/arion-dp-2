@@ -117,9 +117,10 @@ class ArionGatewayCluster(IdentifiedDataSerializable):
         self.overlay_type = object_data_input.read_string()
 
 class RoutingRule(IdentifiedDataSerializable):
-    def __init__(self, id=None, mac=None, hostmac=None, hostip=None, ip=None, vni=None, version=None):
+    def __init__(self, id=None, mac=None, ariongroup=None, hostmac=None, hostip=None, ip=None, vni=None, version=None):
         self.id = id
         self.mac = mac
+        self.ariongroup = ariongroup
         self.hostmac = hostmac
         self.hostip = hostip
         self.ip = ip
@@ -138,6 +139,7 @@ class RoutingRule(IdentifiedDataSerializable):
     def write_data(self, object_data_output):
         object_data_output.write_string(self.id)
         object_data_output.write_string(self.mac)
+        object_data_output.write_string(self.ariongroup)
         object_data_output.write_string(self.hostmac)
         object_data_output.write_string(self.hostip)
         object_data_output.write_string(self.ip)
@@ -147,6 +149,7 @@ class RoutingRule(IdentifiedDataSerializable):
     def read_data(self, object_data_input):
         self.id = object_data_input.read_string()
         self.mac = object_data_input.read_string()
+        self.ariongroup = object_data_input.read_string()
         self.hostmac = object_data_input.read_string()
         self.hostip = object_data_input.read_string()
         self.ip = object_data_input.read_string()
@@ -207,6 +210,25 @@ class Zgc(db.Model):
         }
 
 
+class Gw(db.Model):
+
+    __tablename__ = 'gws'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    node_id = db.Column(db.String(64), db.ForeignKey('nodes.node_id'),
+                       nullable=False)
+    ip = db.Column(db.String, nullable=False)
+    mac = db.Column(db.String, nullable=False)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'ip': self.ip,
+            'mac': self.mac,
+            'node_id': self.node_id
+        }
+
+
 class Node(db.Model):
 
     __tablename__ = 'nodes'
@@ -224,6 +246,7 @@ class Node(db.Model):
     mac_tenant = db.Column(db.String(18), nullable=False)
     inf_zgc = db.Column(db.String(16), nullable=False)
     mac_zgc = db.Column(db.String(18), nullable=False)
+    gws = db.relationship("Gw", backref="node")
 
     def to_json(self):
         return {
@@ -234,8 +257,10 @@ class Node(db.Model):
             'description': self.description,
             'ip_control': self.ip_control,
             'inf_tenant': self.inf_tenant,
-            'inf_zgc': self.inf_zgc
+            'inf_zgc': self.inf_zgc,
+            'gws': [gw.to_json() for gw in self.gws]
         }
+
 
 
 class Vpc(db.Model):
