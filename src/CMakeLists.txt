@@ -3,7 +3,7 @@
 # Copyright (c) 2022 The Authors.
 # Authors: Wei Yue         <@w-yue>
 #
-# Summary: src level CMake listfile for arion project
+# Summary: src level CMake listfile for Arion DP project
 
 message("Processing src/CMakeList.txt")
 

@@ -3,7 +3,7 @@
 # Copyright (c) 2020-2022 The Authors.
 # Authors: Bin Liang         <@liangbin>
 #
-# Summary: test level CMake listfile for arion project
+# Summary: test level CMake listfile for Arion DP project
 
 message("Processing test/CMakeList.txt")
 

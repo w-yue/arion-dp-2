@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /**
 * @file      trn_rpc_protocol.x
-* @authors    Wei Yue             <@w-yue>
+* @authors    Sherif Abdelwahab,  <@zasherif>
+*             Wei Yue             <@w-yue>
 *
 * @brief Defines an internal protocol to manage the data-plane.
 *
-* @copyright Copyright (c) 2022 The Authors.
+* @copyright Copyright (c) 2019-2022 The Authors.
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by

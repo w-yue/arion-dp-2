@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @author Wei Yue <@w-yue>
+ * @author Sherif Abdelwahab (@zasherif)
+ *         Phu Tran          (@phudtran)
+ *         Wei Yue <@w-yue>
  *
  * @brief Transit daemon functions and helper macros
  *
- * @copyright Copyright (c) 2022 The Authors.
+ * @copyright Copyright (c) 2019-2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
