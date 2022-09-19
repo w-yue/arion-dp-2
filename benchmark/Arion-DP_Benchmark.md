@@ -163,7 +163,7 @@ To experiement how well application may run across Arion DP cluster, we run stan
 
 
 ### Latency
-The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application, via arion adds about *0.1ms* in latency in avarage.
+The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application in our setup, via arion adds about *0.1 ms* in latency in avarage.
 
 For direct:
 
