@@ -4,7 +4,7 @@
 v0.3
 ## Introduction
 
-This is an benchmark report for Arion DP network performance. We conducted the Throughput and Latency Benchmarking on single Wing as well as Arion DP cluster. 
+This is a benchmark report for Arion DP network performance. We conducted the Throughput and Latency Benchmarking on single Wing as well as Arion DP cluster. 
 
 We used different tools to conduct various benchmark tests. The results shown below are collected with netperf tests, although we also used iperf3 for comparision. The throughput benchmark uses netperf's TCP_STREAM test. TCP_RR and TCP_CRR are used to observe network latency.
 
