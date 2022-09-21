@@ -99,7 +99,7 @@ The above graph shows the maximum throughput that can be achieved with a single 
 | via Arion  |	9000  |	9586.03 		 |    101.7%     |       17.07  |
 | direct	 |  9000  |	9426.22 		 |    100%       |         26.23  |
 
-The tests are measured by running *netperf* using the *TCP_STREAM* test. Since the test is mostly done using a single core for network processing(as also observed during the test), for default mtu 1500 tests, above number is constrained by the available CPU resources of a single core. An interesting observation is XDP/eBPF driver mode has noticable better throughput than direct. It looks like longer data pipeline helps here. This can be further studied but not the focus for now.
+The tests are measured by running *netperf* using the *TCP_STREAM* test. Since the test is mostly done using a single core for network processing(as also observed during the test), for default mtu 1500 tests, above number is constrained by the available CPU resources of a single core. An interesting observation is XDP/eBPF driver mode has noticable better throughput than direct. It looks like longer data pipeline might help here. This can be further studied but not the focus point for now.
 
 TCP throughput benchmark is extreamly useful for applications like:
  - AL/ML applications which requre access to large amount of data;
@@ -130,84 +130,79 @@ To experiement how well application may run across Arion DP cluster, we run stan
   - On one container, launch redis server with command:
     - *redis-server --protected-mode no*
   - On another container on different compute node, we launch redis benchmarking commands:
-    - *redis-benchmark -h {server_ip}*;
+    - *redis-benchmark -h {server_ip} -n 1000000*;
       - default parameters:  
-        - 100000 requests
+        - 1000000 requests
         - 50 parallel clients
         - 3 bytes payload
         - keep alive: 1
-    - *redis-benchmark -h {server_ip} -d 1400 -P 50*.  We use larger packet size and turn on pipeline for better throughput.
-      - new parameters:
-        - 100000 requests
+    - *redis-benchmark -h {server_ip} -d 1400 -P 50 -n 1000000*.  We use larger packet size and turn on pipeline for better throughput.
+      - parameters:
+        - 1000000 requests
         - 50 parallel clients
         - 50 pipeline requests
         - 1400 bytes in payload
         - keep alive: 1
     
-![redis-default](https://user-images.githubusercontent.com/83482178/190533358-1adc3172-8317-4670-b119-7460478199ff.png)
-![redis-pipe1](https://user-images.githubusercontent.com/83482178/190533462-3c3911ff-3216-49ad-941e-22b0050c1b0f.png)
-![redis-pipe2](https://user-images.githubusercontent.com/83482178/190533523-94160e99-20b2-4156-a9d2-b23c901e9c4a.png)
+![redis-default](https://user-images.githubusercontent.com/83482178/191415993-77d9ac49-d524-4684-b36b-651c3260ef21.png)
+![redis-pipe1](https://user-images.githubusercontent.com/83482178/191416039-dd64bd70-83fe-47bb-92ee-91ea56388ef7.png)
+![redis-pipe2](https://user-images.githubusercontent.com/83482178/191416088-c408a059-90d3-410d-94fa-b2c660818a0e.png)
 
 | Test	    | default direct(req/s) |	default via arion(req/s) |	difference(%)	| pipelined direct(req/s) |	pipelined via arion(req/s) | difference(%) |
 | :---      | :---:          | :---:              |         :---: |     :---:         |  :---:              | ---:         |
-| PING_INLINE	| 38789.76 |	37271.71 |	96.09% |	548087.44	| 566101.69 |  103.29%   |	
-| PING_BULK	 | 43122.04	| 36751.20	| 85.23%	|952857.19	| 1123595.50 | 117.92% |	
-| SET	| 44072.28	| 38580.25|	87.54%	| 237283.69 |	245183.38	| 103.33% |
-| GET	| 47961.63	|38744.67	| 80.78%	| 251788.94	|238095.25	| 94.56% |
-| INCR	| 47915.67|	38491.14 |	80.33%|	676013.50	|648064.50	| 95.87% |
-| SADD	| 45724.73|	39385.59 |	86.14% | 	557777.75	|595238.12	| 106.72% |
-| ZADD	| 40355.12|	38789.76 | 96.12%	|418410.06	|449103.12	| 107.34% |
-| ZPOPMIN	| 39231.07|	38565.37 | 98.30%	|	674832.19	|766030.56	| 113.51% |
-| LRANGE_100| 23523.88 |	23148.15 |	98.40%|	2491.48|	3145.00	| 126.23% |
-| LRANGE_600|	5667.97	| 5596.91	| 98.75% |	409.42	|496.99	| 121.39% |
+| PING_INLINE	| 41543.77 |	39589.85 |	95.30% |	541608.00	| 542353.56 |  100.04%   |	
+| PING_BULK	 | 41335.98	| 39680.96	| 96.00%	| 967553.12	| 1003159.5 | 103.68% |	
+| SET	| 41526.52	| 39571.05|	95.29%	| 210196.89 |	201777.25	| 95.99% |
+| GET	| 41179.38	|39574.18	| 96.10%	| 219367.19	| 212697.36	| 96.96% |
+| INCR	| 41504.11|	39848.58 |	96.01%|	602801.19	| 599700.44	| 99.49% |
+| SADD	| 41435.32|	39823.18 |	96.11% | 545692.5	| 559446.62	| 102.52% |
+| ZADD	| 42353.14|	40027.22 | 94.51%	| 410500.41	| 432799.62	| 105.43% |
+| ZPOPMIN	| 42190.53|	39748.79 | 94.21%	|	704222.38	| 717276.00	| 101.85% |
+| LRANGE_100| 23850.98 |	23994.05 |	100.60%|	2652.63 |	2650.06	| 99.90% |
+| LRANGE_600|	6215.54	| 5953.73	| 95.79% |	458.57	| 504.88	| 110.10% |
 
+Redis benchmarking results shows that redis commands through Arion DP cluster only have about *4%* slowness in terms of request/s compared with direct under default redis-benchmark; Using pipeline and larger packet size, the throughput(request/s) between via Arion and direct is about the same for the test sets in redis-benchmark.
 
 ### Latency
-The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application in our setup, via arion adds about *0.1 ms* in latency in avarage.
+The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application in our setup, via arion adds about *0.1 ms* latency in avarage.
 
 For direct:
 
-root@4b66c0f71492:/# redis-cli --latency-history -h 123.0.0.178
+root@8f8ce443c29d:/# redis-cli --latency-history -h 123.0.0.45
 
-  *min: 0, max: 1, avg: 0.28 (1445 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.25 (1448 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.08 (1479 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.29 (1444 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.25 (1446 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.08 (1478 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.27 (1446 samples) -- 15.00 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.27 (1445 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.00 seconds range*
 
-  *min: 0, max: 1, avg: 0.26 (1447 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.26 (1445 samples) -- 15.00 seconds range*
-
-  *min: 0, max: 1, avg: 0.28 (1444 samples) -- 15.00 seconds range*
+    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.00 seconds range*
 
 For via arion:
 
-root@4b66c0f71492:/etc/redis# redis-cli --latency-history -h 123.0.0.178   
+root@8f8ce443c29d:/# redis-cli --latency-history -h 123.0.0.45
 
-  *min: 0, max: 1, avg: 0.37 (1429 samples) -- 15.00 seconds range*
+    *min: 0, max: 1, avg: 0.20 (1465 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.39 (1428 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range*
 
-  *min: 0, max: 1, avg: 0.37 (1432 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.38 (1429 samples) -- 15.00 seconds range*
+    *min: 0, max: 1, avg: 0.21 (1463 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.39 (1429 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.19 (1463 samples) -- 15.00 seconds range*
 
-  *min: 0, max: 1, avg: 0.36 (1430 samples) -- 15.01 seconds range*
+    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range*
 
-  *min: 0, max: 1, avg: 0.37 (1428 samples) -- 15.01 seconds range*
-
-  *min: 0, max: 1, avg: 0.37 (1430 samples) -- 15.01 seconds range*
-
-  *min: 0, max: 3, avg: 0.35 (1429 samples) -- 15.00 seconds range*
+    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range*
 
 ### Notes 
 
