@@ -161,7 +161,7 @@ To experiement how well application may run across Arion DP cluster, we run stan
 | LRANGE_100| 23850.98 |	23994.05 |	100.60%|	2652.63 |	2650.06	| 99.90% |
 | LRANGE_600|	6215.54	| 5953.73	| 95.79% |	458.57	| 504.88	| 110.10% |
 
-Redis benchmarking results shows that redis commands through Arion DP cluster only have about *4%* slowness in terms of request/s compared with direct under default redis-benchmark; Using pipeline and larger packet size, the throughput(request/s) between via Arion and direct is about the same for the test sets in redis-benchmark.
+Redis benchmarking results shows that redis commands through Arion DP cluster are only about *4%* slowness in terms of request/s compared with direct under default redis benchmark. When running redis-benchmark with pipeline enabled and larger packet size, the throughput(request/s) between via Arion and direct is about the same for the test sets in redis benchmark.
 
 ### Latency
 The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application in our setup, via arion adds about *0.1 ms* latency in avarage.
