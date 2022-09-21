@@ -170,39 +170,39 @@ For direct:
 
 root@8f8ce443c29d:/# redis-cli --latency-history -h 123.0.0.45
 
-    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.08 (1479 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.08 (1479 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.08 (1478 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.08 (1478 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.00 seconds range*
+    min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.00 seconds range
 
-    *min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.09 (1479 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.00 seconds range*
+    min: 0, max: 1, avg: 0.09 (1478 samples) -- 15.00 seconds range
 
 For via arion:
 
 root@8f8ce443c29d:/# redis-cli --latency-history -h 123.0.0.45
 
-    *min: 0, max: 1, avg: 0.20 (1465 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.20 (1465 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range*
+    min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range
 
-    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.21 (1463 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.21 (1463 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.19 (1463 samples) -- 15.00 seconds range*
+    min: 0, max: 1, avg: 0.19 (1463 samples) -- 15.00 seconds range
 
-    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range*
+    min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.01 seconds range
 
-    *min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range*
+    min: 0, max: 1, avg: 0.20 (1463 samples) -- 15.00 seconds range
 
 ### Notes 
 
