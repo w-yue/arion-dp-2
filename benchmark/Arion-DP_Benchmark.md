@@ -126,7 +126,7 @@ This test measures the performance of establishing a connection, exchanging a si
 ## Redis Benchmarking
 
 ### Throughput(Request/s)
-To experiement how well application may run across Arion DP cluster, we run standard redis benchmarking tool on Compute Nodes and compare the performance between direct compute node to compute node and via Arion DP cluster. With redis server run on one of the containers in compute node, redis benchmarking application is launched from another container in different computer node with two sets of benchmarking tests. 
+To experiement how well application may run across Arion DP cluster, we run standard redis benchmarking tool on Compute Nodes and compare the performance between direct compute node to compute node and via Arion DP cluster. With redis server run on one of the containers in compute node, redis benchmarking application is launched from another container in different compute node with two sets of benchmarking tests. 
   - On one container, launch redis server with command:
     - *redis-server --protected-mode no*
   - On another container on different compute node, we launch redis benchmarking commands:
@@ -161,7 +161,7 @@ To experiement how well application may run across Arion DP cluster, we run stan
 | LRANGE_100| 23850.98 |	23994.05 |	100.60%|	2652.63 |	2650.06	| 99.90% |
 | LRANGE_600|	6215.54	| 5953.73	| 95.79% |	458.57	| 504.88	| 110.10% |
 
-Redis benchmarking results show that redis benchmark with default parameters through Arion DP cluster are only about *4%* slower in terms of request/s compared to direct. When running redis-benchmark with pipeline enabled and larger packet size, the throughput(request/s) between via Arion and direct is about the same for the redis benchmark test sets.
+Redis benchmarking results show that redis commands with default parameters through Arion DP cluster are only about *4%* slower in terms of request/s compared to direct. When running redis-benchmark with pipeline enabled and larger packet size, the throughput(request/s) between via Arion and direct is about the same for the redis benchmark test sets.
 
 ### Latency
 The earlier version of redis-benchmark has latency and throughput in summary output but the later version only has requests/s output: requests/s and request time distribution. We also used "redis-cli --latency" to compare the average latency between direct and via arion. For redis application in our setup, via arion adds about *0.1 ms* latency in avarage.
