@@ -12,7 +12,7 @@ The *CN DP notification* works with Arion DP framework and tested on Ubuntu. Wit
 
 *CN DP notification* is a submodule that is built and deployed only in Compute Node when needed. For this submodule to be effective:
   - the Arion DP cluster needs to be deployed with *DP notification* turned on;
-  - on Compute Node side, ACA needs to be started with OAM receiver RestFul service enabled.
+  - on Compute Node side, ACA needs to start with OAM receiver RESTful service enabled.
 
 Please note Arion DP gateway works for CNs with or without ACA and/or this submodule deployed on CN side.
 
