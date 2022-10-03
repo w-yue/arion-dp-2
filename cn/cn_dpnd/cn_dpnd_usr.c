@@ -298,8 +298,7 @@ int cn_dp_assistant(int handle, bool ckmap)
 
 int main(int argc, char **argv) 
 {
-    printf("Hello World!\n");
-
+    
 #if checkmap
     static const char *default_filename = "cn_dpnd_xdp.o";
     static const char *default_progsec = "cn_dpnd";
