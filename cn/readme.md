@@ -38,6 +38,10 @@ Please note Arion DP gateway works for CNs with or without ACA and/or this submo
        $ sudo ./cn_dpnd_user -h
   
 
-# Test
+## Test
 
-  This submodule is tested and verified in bare-metal lab environment.
+This submodule is tested and verified in bare-metal lab environment.
+
+## Misc
+
+We did preliminary throughput test for turning on *DP notification* at Arion DP cluster side, the initial result indicates the cost at Arion DP cluster side is minimal( *<3%* in terms of throughput differences).
