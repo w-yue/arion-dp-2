@@ -6,7 +6,7 @@ then update OVS rules to allow direct CN to CN communication instead of going th
 optional, Arion-DP gateway works with/without this submodule, the difference is without *CN DP notification* submodule, the extra OAM 
 information in incoming packets are silently ignored.
 
-The CN and Arion work and tested on Ubuntu. With CN tested on Ubuntu 18.04+ and Arion works and tested on Ubuntu 22.04.
+The *CN DP notification* works with Arion DP framework and tested on Ubuntu. With CN runing on Ubuntu 18.04+ and Arion DP on Ubuntu 22.04.
 
 ## Prerequisites
 
