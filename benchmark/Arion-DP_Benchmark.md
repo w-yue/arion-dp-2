@@ -1,5 +1,5 @@
 # Arion DP Benchmark
-09/15/2022
+09/20/2022
 
 v0.3
 ## Introduction
