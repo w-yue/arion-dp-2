@@ -593,20 +593,6 @@ int _transit(struct xdp_md *ctx)
 		}
 	}
 
-	if (addHeader) {
-		__u8 apendlen = sizeof(struct xdp_hints_src);
-		bpf_debug("[Transit::%d] XXXX Tx: addr: %x, len=%d\n", 
-				__LINE__, ctx->data, ctx->data_end - ctx->data);
-		pkt_not_add_head = bpf_xdp_adjust_head(ctx, sizeof(struct xdp_hints_src));
-		if (pkt_not_add_head) {
-			bpf_debug("[Transit:%d] XXXX TX: Adjust IP pkt header failed.\n", __LINE__);
-		} else {
-			__u16 len = ctx->data_end - ctx->data;
-			bpf_debug("[Transit:%d] XXXX TX: Adjust IP pkt header succeeded(len=%d -- %d).\n", 
-				__LINE__, len, apendlen);
-		}
-	}
-
 	struct transit_packet pkt;
 	pkt.data = (void *)(long)ctx->data;
 	pkt.data_end = (void *)(long)ctx->data_end;
