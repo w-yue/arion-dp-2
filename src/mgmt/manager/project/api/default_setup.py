@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 The Authors.
 #
-# Authors: Rio Zhu <@zzxgzgz>
+# Authors: io Zhu <@zzxgzgz>
 #
 # Summary: default setup API
 #
@@ -50,50 +50,55 @@ default_setup_blueprint = Blueprint('default_setup', __name__)
 def setup():
     logger.debug(f'Start getting data from Hazelcast')
 
-    gateway_list = None
+    use_arion_agent_parameter = request.args.get("use_arion_agent", default=None, type=lambda v: v.lower() == 'true')
+
 
     get_data_start_time = time.time()
-    connect_to_hazelcast(hazelcast_ip_port)    
+    connect_to_hazelcast(hazelcast_ip_port)
 
     arion_gateway_cluster_set = arion_gateway_cluster_map.entry_set().result()
     logger.debug(f'GOT {len(arion_gateway_cluster_set)} ArionGatewayClusters from Hazelcast')
-    
+
     arion_nodes_set = arion_nodes_map.entry_set().result()
     logger.debug(f'GOT {len(arion_nodes_set)} ArionNodes from Hazelcast')
-    
+
     vpc_set = vpc_map.entry_set().result()
     logger.debug(f'GOT {len(vpc_set)} VPCs from Hazelcast')
-    
+
     routing_rule_set = routing_rule_map.entry_set().result()
     logger.debug(f'GOT {len(routing_rule_set)} RoutingRules from Hazelcast')
-    
+
     get_data_end_time = time.time()
     logger.debug(f'Finished getting data from Hazelcast, it took {get_data_end_time - get_data_start_time} seconds, now start setting up with the data.')
-    
+
     for cluster_key, cluster in arion_gateway_cluster_set:
         set_up_cluster_from_hazelcast(cluster)
         time.sleep(10)
-    
+
     for node_key, node in arion_nodes_set:
         set_up_node_from_hazelcast(node)
         time.sleep(10)
-    
+
     for vpc_key, vpc_value in vpc_set:
         current_vpc : VPC = vpc_value
         vpc_response = set_up_vpc_from_hazelcast(current_vpc)
         response_object = vpc_response["gws"]
         routing_rules_in_current_vpc = []
+        print(f'Current VPC vni: {current_vpc.vni}')
         time.sleep(10)
-        for routing_rule_key, routing_rule_value  in routing_rule_set:
-            rule: RoutingRule = routing_rule_value
-            if rule.vni == current_vpc.vni:
-                routing_rules_in_current_vpc.append(rule)
-        set_up_ports_in_the_same_vpc_from_hazelcast(routing_rules_in_current_vpc, current_vpc.vpc_id)
-        time.sleep(10)
-        
-    
+        if use_arion_agent_parameter == False:
+            for routing_rule_key, routing_rule_value  in routing_rule_set:
+                rule: RoutingRule = routing_rule_value
+                if rule.vni == current_vpc.vni:
+                    routing_rules_in_current_vpc.append(rule)
+            set_up_ports_in_the_same_vpc_from_hazelcast(routing_rules_in_current_vpc, current_vpc.vpc_id)
+            time.sleep(10)
+        else:
+            print(f'user_arion_agent={use_arion_agent_parameter}, thus not setting up ports in this call.')
+
+
     setup_finish_time = time.time()
-    
+
     logger.debug(f'Finished setting up, it took {setup_finish_time - get_data_end_time} seconds..')
 
     return jsonify(response_object), 201
@@ -101,21 +106,22 @@ def setup():
 def connect_to_hazelcast(hazelcast_ip_port):
     global hazelcast_client
     hazelcast_client = hazelcast.HazelcastClient(
-        cluster_members=[hazelcast_ip_port], 
+        cluster_members=[hazelcast_ip_port],
         data_serializable_factories=hazelcast_serialization_factory)
     # GET all exsiting maps from Hazelcast
     global arion_gateway_cluster_map
     arion_gateway_cluster_map = hazelcast_client.get_map('com.futurewei.common.model.ArionGatewayCluster')
-    
+
     global arion_nodes_map
     arion_nodes_map = hazelcast_client.get_map('com.futurewei.common.model.ArionNode')
-    
+
     global vpc_map
     vpc_map = hazelcast_client.get_map('com.futurewei.common.model.VPC')
-    
+
     global routing_rule_map
+    # new table name: com.futurewei.common.model.NeighborRule
     routing_rule_map = hazelcast_client.get_map('com.futurewei.common.model.NeighborRule')
-    
+
     def added(event):
         number_of_entries_in_map = len(routing_rule_map.entry_set().result())
         logger.info(
@@ -140,4 +146,3 @@ def connect_to_hazelcast(hazelcast_ip_port):
     routing_rule_map.add_entry_listener(include_value=True, removed_func=removed)
     logger.info('Finished setting up with Hazelcast.')
     return
-
