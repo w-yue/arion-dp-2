@@ -21,6 +21,11 @@ sudo apt install linux-tools-$(uname -r)
 sudo apt install linux-headers-$(uname -r)
 
 git submodule update --init --recursive
+mkdir -p /tmp/git/xdp
+git clone https://github.com/xdp-project/xdp-tutorial.git /tmp/git/xdp
+cp -r /tmp/git/xdp/common .
+cp -r /tmp/git/xdp/headers .
+rm -rf /tmp/git
 
 kernel_ver=`uname -r`
 echo "Running kernel version: $kernel_ver"

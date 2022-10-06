@@ -276,12 +276,12 @@ int cn_dp_assistant(int handle, bool ckmap)
 
 	    // dummy test
         /*
-	    sendbuf.opdata.encap.dip = inet_addr("123.0.0.45");
-	    trn_set_mac(sendbuf.opdata.encap.dmac, dst_mac);
-            sendbuf.flow.sport = 0;
-	    sendbuf.flow.dport = 0;
-	    sendbuf.flow.daddr = inet_addr("123.0.0.45");
-	    sendbuf.flow.saddr = inet_addr("123.0.0.44");
+        sendbuf.opdata.encap.dip = inet_addr("123.0.0.45");
+        trn_set_mac(sendbuf.opdata.encap.dmac, dst_mac);
+        sendbuf.flow.sport = 0;
+        sendbuf.flow.dport = 0;
+        sendbuf.flow.daddr = inet_addr("123.0.0.45");
+        sendbuf.flow.saddr = inet_addr("123.0.0.44");
 	    */
         if (sendto(sockfd, &sendbuf.opcode, sendbuf.len, 0,
                        (struct sockaddr*)&socket_receiver_address/*&socket_address*/, sizeof(socket_receiver_address/*sockaddr_ll*/)) < 0) {
@@ -298,24 +298,24 @@ int cn_dp_assistant(int handle, bool ckmap)
 
 int main(int argc, char **argv) 
 {
-    
+
 #if checkmap
     static const char *default_filename = "cn_dpnd_xdp.o";
     static const char *default_progsec = "cn_dpnd";
     static const char *__desc__ = "DPND XDP loader and update \n"
-	" - Allows selecting BPF section --progsec name to XDP-attach to --dev\n";
+            " - Allows selecting BPF section --progsec name to XDP-attach to --dev\n";
 
     struct bpf_map_info map_expect = { 0 };
-	struct bpf_map_info info = { 0 };
-	struct bpf_object *bpf_obj;
+    struct bpf_map_info info = { 0 };
+    struct bpf_object *bpf_obj;
     int oam_map_fd;
     int err;
 
-	struct config cfg = {
-		.xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_DRV_MODE,
-		.ifindex   = -1,
-		.do_unload = false,
-	};
+    struct config cfg = {
+        .xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_DRV_MODE,
+        .ifindex   = -1,
+        .do_unload = false,
+    };
 
 	/* Set default BPF-ELF object file and BPF program name */
 	strncpy(cfg.filename, default_filename, sizeof(cfg.filename));

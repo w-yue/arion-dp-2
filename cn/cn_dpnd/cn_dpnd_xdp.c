@@ -5,7 +5,7 @@
  *
  * @brief Implements the compute node XDP program (CN DP OAM pick up logic)
  *
- * @copyright Copyright (c) 2019-2022 The Authors.
+ * @copyright Copyright (c) 2022 The Authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,10 +169,7 @@ static inline void trn_set_src_mac(void *data, unsigned char *src_mac)
 
 static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 {
-	//endpoint_t *ep;
-	//endpoint_key_t epkey;
 	ipv4_flow_t *flow = &pkt->fctx.flow;
-	//__u64 csum = 0;
 	__u16 len = 0;
 	int ret = 0;
 	
@@ -239,7 +236,8 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		if (h_src->flags != 0x5354 || h_src->vni != pkt->vni) {
 			bpf_debug("[Dpnd::%d] XXXXX TX: extra fields not recognized flags: %d -- vni: %d.\n",
 					__LINE__, h_src->flags, h_src->vni);
-			return XDP_PASS; // not something we recognize
+			// not something we recognize
+			return XDP_PASS;
 		}
 
 		/* Generate Direct Path request */
@@ -248,9 +246,8 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		
 		pkt->fctx.opdata.encap.dhip = h_src->saddr;
 		
-		trn_set_mac(pkt->fctx.opdata.encap.dmac, pkt->inner_eth->h_source); // ep->mac);
-		
-		trn_set_mac(pkt->fctx.opdata.encap.dhmac, h_src->h_source); //ep->hmac);
+		trn_set_mac(pkt->fctx.opdata.encap.dmac, pkt->inner_eth->h_source);
+		trn_set_mac(pkt->fctx.opdata.encap.dhmac, h_src->h_source);
 
 		pkt->fctx.opdata.encap.timeout = bpf_htons(TRAN_DP_FLOW_TIMEOUT);
 		len = sizeof(struct udphdr) + sizeof(pkt->fctx.opcode) +
@@ -408,7 +405,7 @@ int _transit(struct xdp_md *ctx)
 	struct ethhdr *eth = pkt.data;
 	__u64 offset = sizeof(*eth);
 
-    if ((void *)eth + offset > pkt.data_end)
+	if ((void *)eth + offset > pkt.data_end)
 		return 0;
 
 	return trn_process_eth(&pkt);
