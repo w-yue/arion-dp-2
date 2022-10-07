@@ -133,6 +133,7 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 	ipv4_flow_t *flow = &pkt->fctx.flow;
 	__u64 csum = 0;
 	__u16 len = 0;
+	__be32 tip = 0;
 
 	pkt->inner_ip = (void *)pkt->inner_eth + sizeof(*pkt->inner_eth);
 
@@ -150,6 +151,9 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 			"vni:0x%x ip:0x%x\n", pkt->itf_idx, epkey.vni, bpf_ntohl(epkey.ip));
 		return XDP_DROP;
 	}
+
+	bpf_debug("[Transit]: XXXX found endpoint: vni:0x%x ip:0x%x, hip: 0x%x\n", 
+			epkey.vni, bpf_ntohl(epkey.ip), bpf_ntohl(ep->hip));
 
 	memset((void *)&pkt->fctx, 0, sizeof(flow_ctx_t));
 
@@ -183,6 +187,7 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		flow->dport = pkt->inner_udp->dest;
 	}
 
+/* get rid of this direct path logic for now.  --wyue 4/1/2022 */
 #if turnOn
 	/* Generate Direct Path request */
 	pkt->fctx.opcode = bpf_htonl(XDP_FLOW_OP_ENCAP);
@@ -218,11 +223,15 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 	trn_set_dst_mac(pkt->inner_eth, ep->mac);
 
 	/* Keep overlay header, update outer header destinations */
+	if (appendTail && flow->protocol != IPPROTO_ICMP && !pkt_not_add_tail) {
+        //trn_mod_vni(pkt->overlay.vxlan);
+		tip = pkt->ip->saddr;
+    }
 	trn_set_src_dst_ip_csum(pkt->ip, pkt->ip->daddr, ep->hip, pkt->data_end);
 	trn_set_src_mac(pkt->eth, pkt->eth->h_dest);
 	trn_set_dst_mac(pkt->eth, ep->hmac);
 
-	if (appendTail && flow->protocol != IPPROTO_ICMP) {
+	if (appendTail && flow->protocol != IPPROTO_ICMP && !pkt_not_add_tail) {
 		struct xdp_hints_src *h_src;
 		__u8 offset = sizeof(*h_src);
 
@@ -232,15 +241,24 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 			return XDP_DROP;
 		}
 
+#if 0
+		pkt_not_add_tail = bpf_xdp_adjust_tail(pkt->xdp, sizeof(struct xdp_hints_src));
+		if (pkt_not_add_tail) {
+			bpf_debug("[Transit:%d] XXXX TX: bpf_xdp_adjust_tail failed", __LINE__);
+			return XDP_DROP;
+		}
+#endif
+
 		ip_tot_len &= 0xFFF; // Max 4095
-		if ((void *)pkt->data + ip_tot_len + offset + 14 > pkt->data_end) {  // 14 is the size of etherhdr
+		if ((void *)pkt->data + ip_tot_len + sizeof(struct xdp_hints_src) + sizeof(struct ethhdr) > pkt->data_end) {
 			return XDP_ABORTED;
 		}
 
-		h_src = (void *)pkt->data + ip_tot_len + 14;
-		h_src->saddr = pkt->ip->saddr;
+		h_src = (void *)pkt->data + ip_tot_len + sizeof(struct ethhdr);
 		h_src->vni = pkt->vni;
-		h_src->flags = 0x5354;  //
+		h_src->saddr = tip;
+		h_src->flags = 0x5354;
+
 		h_src->h_source[0] = pkt->eth->h_source[0];
 		h_src->h_source[1] = pkt->eth->h_source[1];
 		h_src->h_source[2] = pkt->eth->h_source[2];
@@ -248,8 +266,10 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 		h_src->h_source[4] = pkt->eth->h_source[4];
 		h_src->h_source[5] = pkt->eth->h_source[5];
 		
-		bpf_debug("[Transit:%d] XXXXX TX: len=%d -- %d.\n", 
-				__LINE__, pkt->data_end - pkt->data, ip_tot_len);
+		bpf_debug("   XXXX appendInfo   vni: %d saddr:0x%x h_source:%x ..\n",
+				h_src->vni,
+				bpf_ntohl(h_src->saddr), 
+				bpf_ntohl(*(__u32 *)h_src->h_source));
 	}
 
 	bpf_debug("[Transit:%d] XXXX TX: Forward IP pkt from vni:%d ip:0x%x\n",
@@ -559,18 +579,17 @@ static __inline int trn_process_eth(struct transit_packet *pkt)
 SEC("transit")
 int _transit(struct xdp_md *ctx)
 {
-
 	if (appendTail) {
-		__u8 apendlen = sizeof(struct xdp_hints_src);
-		bpf_debug("[Transit::%d] XXXX Tx: addr: %x, len=%d\n", 
-				__LINE__, ctx->data, ctx->data_end - ctx->data);
+		//__u8 apendlen = sizeof(struct xdp_hints_src);
+		//bpf_debug("[Transit::%d] XXXX Tx: addr: %x, len=%d\n", 
+		//		__LINE__, ctx->data, ctx->data_end - ctx->data);
 		pkt_not_add_tail = bpf_xdp_adjust_tail(ctx, sizeof(struct xdp_hints_src));
 		if (pkt_not_add_tail) {
 			bpf_debug("[Transit:%d] XXXX TX: Appending IP pkt failed.\n", __LINE__);
 		} else {
-			__u16 len = ctx->data_end - ctx->data;
-			bpf_debug("[Transit:%d] XXXX TX: Appending IP pkt succeeded(len=%d -- %d).\n", 
-				__LINE__, len, apendlen);
+			//__u16 len = ctx->data_end - ctx->data;
+			//bpf_debug("[Transit:%d] XXXX TX: Appending IP pkt succeeded(len=%d -- %d).\n", 
+			//	__LINE__, len, apendlen);
 		}
 	}
 

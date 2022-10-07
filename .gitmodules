@@ -4,3 +4,6 @@
 [submodule "src/extern/alcor-control-agent"]
 	path = src/extern/alcor-control-agent
 	url = https://github.com/futurewei-cloud/alcor-control-agent.git
+[submodule "cn/libbpf"]
+	path = cn/libbpf
+	url = https://github.com/libbpf/libbpf/
