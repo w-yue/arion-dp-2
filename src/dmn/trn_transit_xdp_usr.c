@@ -68,6 +68,7 @@ static trn_xdp_map_t trn_xdp_bpfmaps[] = {
 #endif
 	{"if_config_map", true, -1, NULL},
 	{"interfaces_map", true, -1, NULL},
+    {"xsks_map", true, -1,NULL},
 #if turnOn
 	{"oam_queue_map", true, -1, NULL},
 	{"fwd_flow_cache", true, -1, NULL},

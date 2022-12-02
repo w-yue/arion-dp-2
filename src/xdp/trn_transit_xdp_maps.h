@@ -49,6 +49,13 @@ struct bpf_map_def SEC("maps") endpoints_map = {
 };
 BPF_ANNOTATE_KV_PAIR(endpoints_map, endpoint_key_t, endpoint_t);
 
+struct bpf_map_def SEC("maps") xsks_map = {
+        .type = BPF_MAP_TYPE_XSKMAP,
+        .key_size = sizeof(int),
+        .value_size = sizeof(int),
+        .max_entries = 64, /* Assume netdev has no more than 64 queues */
+};
+
 #if turnOn
 struct bpf_map_def SEC("maps") hosted_eps_if = {
 	.type = BPF_MAP_TYPE_HASH,

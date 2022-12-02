@@ -624,6 +624,27 @@ int _transit(struct xdp_md *ctx)
 	}
 
 	if (action == XDP_DROP) {
+        /*
+         * A set entry here means that the corresponding quie_id
+         * has an active AF_XDP socket bound to it.
+         */
+        __u32 rx_q_index = ctx->rx_queue_index;
+        bpf_debug("Going to send packet to rx_queue with index: %u", __LINE__, rx_q_index);
+        if (bpf_map_lookup_elem(&xsks_map, &(rx_q_index))) {
+            bpf_debug("Sending packet to user space via AF_XDP\n",
+                      __LINE__);
+            return bpf_redirect_map(&xsks_map, rx_q_index, 0);
+        }else {
+            if (rx_q_index != 0) {
+                bpf_debug("Changing the rx_q_index from %u to 0", __LINE__, rx_q_index);
+                rx_q_index = 0;
+            }
+            bpf_debug("Couldn't find entry BUT sending packet to user space via AF_XDP\n",
+                      __LINE__);
+            int return_value = bpf_redirect_map(&xsks_map, rx_q_index, 0);
+            bpf_debug("bpf_redirect_map returns %d\n", return_value);
+            return return_value;
+        }
 		__u32 key = TRAN_DROP_PROG;
 		bpf_tail_call(pkt.xdp, &jmp_table, key);
 		return xdpcap_exit(ctx, &xdpcap_hook, XDP_DROP);
