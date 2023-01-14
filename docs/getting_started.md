@@ -43,7 +43,7 @@ Target **site** host Linux environment:
 ## Build and Unit Testing
 1. Clone the Arion DP repository:
     ```
-    git clone --recurse-submodules git@github.com:futurewei-cloud/arion-dp.git
+    git clone --recurse-submodules https://github.com/futurewei-cloud/arion-dp.git
     cd arion-dp
     ```
 2. Build and Run built-in Unit tests, all test cases should pass
