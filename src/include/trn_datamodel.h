@@ -194,10 +194,11 @@ typedef struct {
 typedef struct {
     __u32 prefixlen; /* up to 32 for AF_INET, 128 for AF_INET6*/
     __u32 vni;
-    __u32 ip;
     __u16 port;
     __u8  direction;
     __u8  protocol;
+    __u32 src_ip;
+    __u32 dst_ip;
 } __attribute__((packed, aligned(4))) sg_cidr_key_t;
 
 typedef struct {
