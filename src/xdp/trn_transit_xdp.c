@@ -53,6 +53,8 @@ int _version SEC("version") = 1;
 int pkt_not_add_tail = 1;
 int pkt_not_add_head = 1;
 
+const int EP_NOT_FOUND = 5; // use this const as a new xdp_action, which indicates this packet shall be forwarded to the user space via AF_XDP.
+
 static __inline int trn_rewrite_remote_mac(struct transit_packet *pkt)
 {
 	/* The TTL must have been decremented before this step, Drop the
@@ -149,7 +151,7 @@ static __inline int trn_process_inner_ip(struct transit_packet *pkt)
 	if (!ep) {
 		bpf_debug("[Transit:%d] DROP: inner IP forwarding failed to find endpoint "
 			"vni:0x%x ip:0x%x\n", pkt->itf_idx, epkey.vni, bpf_ntohl(epkey.ip));
-		return XDP_DROP;
+		return EP_NOT_FOUND;
 	}
 
 	bpf_debug("[Transit]: XXXX found endpoint: vni:0x%x ip:0x%x, hip: 0x%x\n", 
@@ -349,7 +351,7 @@ static __inline int trn_process_inner_arp(struct transit_packet *pkt)
 	if (!ep) {
 		bpf_debug("[Transit:%d] DROP: inner ARP Request failed to find endpoint "
 			"vni:0x%x ip:0x%x\n", pkt->itf_idx, epkey.vni, bpf_ntohl(epkey.ip));
-		return XDP_DROP;
+		return EP_NOT_FOUND;
 	}
 
 	/* Modify pkt for inner ARP response */
@@ -623,6 +625,21 @@ int _transit(struct xdp_md *ctx)
 		return xdpcap_exit(ctx, &xdpcap_hook, XDP_PASS);
 	}
 
+    if (action == EP_NOT_FOUND) {
+        /*
+         * A set entry here means that the corresponding quie_id
+         * has an active AF_XDP socket bound to it.
+         */
+        __u32 rx_q_index = ctx->rx_queue_index;
+        bpf_debug("Going to send packet to rx_queue with index: %u", __LINE__, rx_q_index);
+        if (bpf_map_lookup_elem(&xsks_map, &(rx_q_index))) {
+            bpf_debug("Sending packet to user space via AF_XDP\n",
+                      __LINE__);
+            return bpf_redirect_map(&xsks_map, rx_q_index, 0);
+        }
+        // if the packet forwarding to the userspace fails, drop the packet.
+        action = XDP_DROP;
+    }
 	if (action == XDP_DROP) {
 		__u32 key = TRAN_DROP_PROG;
 		bpf_tail_call(pkt.xdp, &jmp_table, key);

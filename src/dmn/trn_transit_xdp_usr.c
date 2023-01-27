@@ -74,6 +74,7 @@ static trn_xdp_map_t trn_xdp_bpfmaps[] = {
 	{"security_group_map", true, -1, NULL},
 	{"port_range_map", true, -1, NULL},
 #endif
+    {"xsks_map", true, -1,NULL},
 #if turnOn
 	{"hosted_eps_if", true, -1, NULL},
 	{"oam_queue_map", true, -1, NULL},
