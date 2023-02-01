@@ -138,7 +138,29 @@ static __inline int trn_sg_check(struct transit_packet *pkt) {
 	sgkey.src_ip = pkt->inner_ip->saddr;
 	sgkey.dst_ip = pkt->inner_ip->daddr;
 	sgkey.protocol = pkt->inner_ip->protocol;
-	sgkey.direction = 1; // source -> direction;
+	sgkey.prefixlen = SG_IPV4_PREFIX; // ??
+
+	// check egress
+	sgkey.direction = 0;
+	sgkey.port = 30011;
+
+	bpf_debug("[Transit:%d] XXXXX port=%d, prefixlen=%d",
+			sgkey.vni, sgkey.port, sgkey.prefixlen);
+	bpf_debug("  XXXXX proto=%d, src_ip:0x%x, dst_ip:0x%x ",
+			sgkey.protocol,
+			bpf_ntohl(sgkey.src_ip),
+			bpf_ntohl(sgkey.dst_ip));
+	sg_entry = bpf_map_lookup_elem(&sg_cidr_map, &sgkey);
+	if (sg_entry == NULL) {
+		bpf_debug("[Transit:%d XXXXX] Drop: no matching sg entry found: %d - %d\n",
+			pkt->itf_idx, sgkey.port, sgkey.vni);
+		return XDP_DROP;
+	}
+
+   // check ingress;
+	sgkey.direction = 1;
+	sgkey.src_ip = sgkey.dst_ip;
+	sgkey.dst_ip = pkt->inner_ip->saddr;
 
 	if (sgkey.protocol == IPPROTO_TCP) {
 		pkt->inner_tcp = (void *)pkt->inner_ip + sizeof(*pkt->inner_ip);
@@ -164,7 +186,6 @@ static __inline int trn_sg_check(struct transit_packet *pkt) {
 		return XDP_PASS;
 	}
 
-	sgkey.prefixlen = SG_IPV4_PREFIX; // ??
 	bpf_debug("[Transit:%d] XXXXX port=%d, prefixlen=%d",
 			sgkey.vni, sgkey.port, sgkey.prefixlen);
 	bpf_debug("  XXXXX proto=%d, src_ip:0x%x, dst_ip:0x%x ",
