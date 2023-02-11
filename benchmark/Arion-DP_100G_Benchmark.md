@@ -54,7 +54,7 @@ The tests shown here includes:
 The tests are done with in house 100G network environment. Below are some observations about current Arion DP: 
  - Network delay to go through Arion Wing(CN-Arion-CN) in netperf TCP_RR test compared with direct CN-CN path can is about *15us*;
  - For single flow tcp_stream benchmark, traffic through Arion DP and direct reaches about the same throughput at about *13~14* Gbps with 9000 mtu;
- - For 32 flows tcp_stream benchmark, traffic through Arion DP reaches about *70.5 Gbps*, direct CN communication reaches about *76.6 Gbps*, which is about *8%* lower, we are looking into it for better understanding and potention improvement;
+ - For 32 flows tcp_stream benchmark, traffic through Arion DP reaches about *70.5 Gbps*, direct CN communication reaches about *76.6 Gbps*, which is about *8%* lower, we are looking into it for better understanding and potential improvement;
  - For default redis benchmark, through Arion DP reaches about *97%* of direct in terms of requests/s.
 
 
