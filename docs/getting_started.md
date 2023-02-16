@@ -85,7 +85,7 @@ $ ./deploy/env_setup.sh
 ```
 
 2. Make necessary changes for the LAB site to be created for you in deploy/playbooks/inventories/vars/site_lab.yml and deploy/playbooks/inventories/hosts_lab
-3. Setup LAB site clusters and deploy Zeta
+3. Setup LAB site clusters and deploy Arion
 
 ```
 $ ./deploy/full_deploy.sh -d lab
